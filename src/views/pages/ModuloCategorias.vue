@@ -302,14 +302,17 @@ const customBase64Uploader = async (event) => {
                     <div class="field">
                         <label for="nombre">Nombre</label>
                         <InputText id="nombre" v-model="selectedCategoria.nombre" required="true" autofocus
-                            :class="{ 'p-invalid': v.nombre.$error }" />
+                            :class="{ 'p-invalid': v.nombre.$error }"
+                            placeholder="Escribe el nombre del categoria aquí ejemplo Mátematica" />
                         <small class="p-error" v-if="v.nombre.$error"> El Nombre tiene que tener por al menos 3 caracteres
                         </small>
                     </div>
                     <div class="field">
                         <label for="descripcion">Descripción</label>
                         <Textarea id="descripcion" v-model="selectedCategoria.descripcion" required="true" rows="3"
-                            cols="20" :class="{ 'p-invalid': v.descripcion.$error }" />
+                            cols="20" :class="{ 'p-invalid': v.descripcion.$error }" 
+                            placeholder="Escribe la descripción de la categoria aquí"
+                            />
                         <small class="p-error" v-if="v.descripcion.$error"> La Descripción tiene que tener por al menos 10
                             caracteres </small>
                     </div>
