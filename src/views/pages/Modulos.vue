@@ -1,14 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useToast } from 'primevue/usetoast';
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
 
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength } from '@vuelidate/validators'
+import {getuseToast} from '@/composables/usarToast';
 
-const toast = useToast();
 const modulos = ref([]); // Aquí se almacena la lista de módulos
 const selectedModule = ref(null); // Aquí se almacena el módulo seleccionado para edición
 const moduloDialog = ref(false); // Dialogo de edición
@@ -16,7 +15,7 @@ const submitted = ref(false); // Indica si el formulario ha sido enviado
 const base64File = ref(null); // Aquí se almacena la imagen seleccionada para subir en base64
 const baseUrl = getBaseUrl();
 const cargando = ref(false);
-
+const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 
 const rules = {
     nombre: { required, minLength: minLength(3) }, // Mínimo de 3 caracteres
@@ -39,7 +38,7 @@ const fetchModulos = async () => {
         modulos.value = response.data;
     } catch (error) {
         console.error('Error con la conexión al backend al obtener los módulos:', error);
-        mostrarErro('Error ', 'Se produjo un error al intentar obtener los datos. Por favor, verifica tu conexión a Internet.');
+        mostrarError('Error ', 'Se produjo un error al intentar obtener los datos. Por favor, verifica tu conexión a Internet.');
     }
 };
 
@@ -68,7 +67,7 @@ const guardarModulo = async () => {
 
     if (v.value.$error) {
         // Mostrar errores de validación si existen
-        mostrarErro('Error', 'Por favor, verifica los datos ingresados.');
+        mostrarError('Error', 'Por favor, verifica los datos ingresados.');
         cargando.value = false;
         console.log(cargando.value)
     } else {
@@ -102,12 +101,12 @@ const guardarModulo = async () => {
         } catch (error) {
 
             if (error.code === 'ECONNABORTED') {
-                mostrarErro('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
+                mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
             } else if (error.response) {
-                mostrarErro('Error', error.response.data);
-                mostrarErro('Error', 'Ha ocurrido un error al guardar la información.');
+                mostrarError('Error', error.response.data);
+                mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
             } else {
-                mostrarErro('Error', 'Ha ocurrido un error al actualizar el módulo. Por favor, verifica tu conexión a Internet.');
+                mostrarError('Error', 'Ha ocurrido un error al actualizar el módulo. Por favor, verifica tu conexión a Internet.');
                 console.error('Error con la conexión a la API al actualizar el módulo:', error);
             }
             cargando.value = false;
@@ -127,19 +126,7 @@ const recaragarTabla = async () => {
     }
 };
 //funcion para mostrar los mensajes de error
-const mostrarErro = (info, mensaje) => {
-    console.log(mensaje);
-    console.log(info);
 
-    toast.add({ severity: 'error', summary: info, detail: mensaje, life: 5000 });
-};
-
-const mostrarInfo = (info, mensaje) => {
-    toast.add({ severity: 'info', summary: info, detail: mensaje, life: 3000 });
-};
-const mostrarExito = (info, mensaje) => {
-    toast.add({ severity: 'success', summary: info, detail: mensaje, life: 3000 });
-};
 
 
 const customBase64Uploader = async (event) => {

@@ -2,7 +2,7 @@
 
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useToast } from 'primevue/usetoast';
+
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
 
@@ -10,11 +10,11 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, minLength } from '@vuelidate/validators'
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
-
+import {getuseToast} from '@/composables/usarToast';
 
 
 const route = useRoute();
-const toast = useToast();
+
 const categorias = ref([]); // Aquí se almacena la lista de módulos
 const selectedCategoria = ref(null); // Aquí se almacena el módulo seleccionado para edición
 const moduloDialog = ref(false); // Dialogo de edición y de nuevo
@@ -26,6 +26,7 @@ const cargando = ref(false);
 const moduloId = ref(route.params.moduloId);
 const modulo = ref(null);
 const router = useRouter();
+const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 
 //funcion para traer el modulo y su actulizacion cunado sea necesario
 
@@ -93,6 +94,7 @@ const eliminarCategoria = async () => {
         const response = await axios.delete(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`);
         if (response.status === 204) {
             //recaragamos la tabla
+            
             mostrarExito('Éxito', 'La categoria se ha eliminado correctamente');
             fetchCategorias();
             eliminarCategoriaDialog.value = false;
@@ -140,7 +142,7 @@ const guardarCategoria = async () => {
 
         if (v.value.$error) {
             // Mostrar errores de validación si existen
-            mostrarErro('Error', 'Por favor, verifica los datos ingresados.');
+            mostrarError('Error', 'Por favor, verifica los datos ingresados.');
             cargando.value = false;
         } else {
             const formData = new FormData();
@@ -188,12 +190,12 @@ const guardarCategoria = async () => {
     } catch (error) {
 
         if (error.code === 'ECONNABORTED') {
-            mostrarErro('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
+            mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
         } else if (error.response) {
-            mostrarErro('Error', error.response.data);
-            mostrarErro('Error', 'Ha ocurrido un error al guardar la información.');
+            mostrarError('Error', error.response.data);
+            mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
         } else {
-            mostrarErro('Error', 'Ha ocurrido un error al actualizar el módulo. Por favor, verifica tu conexión a Internet.');
+            mostrarError('Error', 'Ha ocurrido un error al actualizar el módulo. Por favor, verifica tu conexión a Internet.');
             console.error('Error con la conexión a la API al actualizar el módulo:', error);
         }
         cargando.value = false;
@@ -207,17 +209,9 @@ const openNew = () => {
 };
 
 //funcion para mostrar los mensajes de error
-const mostrarErro = (info, mensaje) => {
-    toast.add({ severity: 'error', summary: info, detail: mensaje, life: 5000 });
-};
 
-const mostrarInfo = (info, mensaje) => {
-    toast.add({ severity: 'info', summary: info, detail: mensaje, life: 3000 });
-};
-const mostrarExito = (info, mensaje) => {
-    toast.add({ severity: 'success', summary: info, detail: mensaje, life: 4000 });
-};
 
+;
 
 const customBase64Uploader = async (event) => {
     const file = event.files[0];
@@ -231,7 +225,7 @@ const customBase64Uploader = async (event) => {
         //converitmos ka imagen en base 64
         selectedCategoria.value.imagen = base64data;
     };
-    mostrarInfo('', 'La imagen se ha cargado correctamente');
+    mostrarInfo('Éxito', 'La imagen se ha cargado correctamente');
 };
 
 </script>
