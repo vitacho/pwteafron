@@ -3,13 +3,17 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-import { getBaseUrl } from '@/composables/useURL';
-import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
+
 
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength } from '@vuelidate/validators'
+
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+
+//imprtaciones de composables
+import { getBaseUrl } from '@/composables/useURL';
+import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
+import { required, minLength } from '@vuelidate/validators'
 import {getuseToast} from '@/composables/usarToast';
 
 
@@ -73,8 +77,8 @@ const fetchCategorias = async () => {
     }
 };
 
-const editarModulo = (modulo) => {
-    selectedCategoria.value = { ...modulo }; // Copia el módulo seleccionado para edición
+const editarCategoria = (categoria) => {
+    selectedCategoria.value = { ...categoria }; // Copia el módulo seleccionado para edición
     moduloDialog.value = true;
 };
 
@@ -112,9 +116,9 @@ const hideDialog = () => {
     selectedCategoria.value = null; // Limpia el módulo seleccionado al cerrar el diálogo
     submitted.value = false; // Limpia el indicador de envío de formulario
     base64File.value = null; // Limpia la imagen seleccionada
-    v.value.$reset(); // Limpia los errores de validación
     fetchCategorias(); //recargasmos la tabla
     selectedCategoria.value = {}; //limpiamos el objeto de la categoria
+
 };
 
 const obtnerNombreMdulo = async () => {
@@ -206,6 +210,7 @@ const guardarCategoria = async () => {
 const openNew = () => {
     selectedCategoria.value = {};
     moduloDialog.value = true;
+    v.value.$reset();
 };
 
 //funcion para mostrar los mensajes de error
@@ -239,7 +244,7 @@ const customBase64Uploader = async (event) => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Nueva Categoria" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
 
                         </div>
                     </template>
@@ -276,8 +281,8 @@ const customBase64Uploader = async (event) => {
                     <Column header="Acción">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                @click="editarModulo(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                                @click="editarCategoria(slotProps.data)" />
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning"
                                 @click="eliminarCategoriaConfirmar(slotProps.data)" />
                         </template>
                     </Column>

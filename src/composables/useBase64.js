@@ -1,6 +1,3 @@
-
-
-
 export function base64ToBlob(base64data, type) {
     
     const byteCharacters = atob(base64data.split(',')[1]);
