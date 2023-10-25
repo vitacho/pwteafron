@@ -9,6 +9,17 @@ const model = ref([
         items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
     },
     {
+        label: 'Administración',
+        items: [
+            {
+                label: 'Modulos',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/pages/modulos'
+            },
+            
+        ]
+    },
+    {
         label: 'UI Components',
         items: [
             { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },

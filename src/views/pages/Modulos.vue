@@ -143,6 +143,12 @@ const customBase64Uploader = async (event) => {
     };
     mostrarInfo('', 'La imagen se ha cargado correctamente');
 };
+
+const goBack = () => {
+    router.go(-1);
+  };
+
+
 </script>
 
 <template>

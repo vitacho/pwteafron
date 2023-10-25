@@ -137,7 +137,7 @@ const router = createRouter({
                     component: () => import('@/views/pages/Crud.vue')
                 },
                 {
-                    path: '/pages/crudmodulos',
+                    path: '/pages/modulos',
                     name: 'crudmodulos',
                     component: () => import('@/views/pages/Modulos.vue')
                 },
@@ -145,6 +145,12 @@ const router = createRouter({
                     path: '/categorias/:moduloId',
                     name: 'Categorias',
                     component: () => import('@/views/pages/ModuloCategorias.vue'),
+                    props: true // Esto permite recibir el parámetro como una propiedad en el componente
+                  },
+                  {
+                    path: '/categorias/activiades/:categoriaId',
+                    name: 'ActividadesCrud',
+                    component: () => import('@/views/pages/Actividades.vue'),
                     props: true // Esto permite recibir el parámetro como una propiedad en el componente
                   },
 

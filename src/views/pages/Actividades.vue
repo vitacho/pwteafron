@@ -47,11 +47,11 @@ const rules = {
 
 const v = useVuelidate(rules, selectedCategoria);
 
-onMounted(async () => {
 
+
+onMounted(async () => {
     obtnerNombreMdulo();
     await fetchCategorias();
-
 });
 
 
@@ -98,13 +98,17 @@ const eliminarCategoria = async () => {
         fromData.append('id', selectedCategoria.value.id);
         fromData.append('activo', false);
         const response = await axios.patch(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`, fromData);
+        //const response = await axios.delete(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`);
         if (response.status === 200) {
             //recaragamos la tabla
+            
             mostrarExito('Éxito', 'La categoria se ha eliminado correctamente');
             fetchCategorias();
             eliminarCategoriaDialog.value = false;
             selectedCategoria.value = {};
+
         }
+
     } catch (error) {
         mostrarError('Error', 'No se puede eliminar la Categoria porque tiene actividades asociadas');
         mostrarError('Error', error);
@@ -245,14 +249,15 @@ const goBack = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block" @click="goBack" />
+                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary" @click="goBack" />
                             <Button label="Nueva Categoria" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
                           
                         </div>
                     </template>
                 </Toolbar>
 
-                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedCategoria" dataKey="id" :paginator="true"
+
+                <DataTable ref="dt" :value="categorias" v-model:selection="selectedCategoria" dataKey="id" :paginator="true"
                     :rows="5" tableStyle="flex justify-content-between"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
@@ -290,15 +295,13 @@ const goBack = () => {
                     <Column header="Actividades">
                         <template #body="slotProps">
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
-                                @click="$router.push({ name: 'ActividadesCrud', params: { categoriaId: slotProps.data.id } })" />
+                                @click="$router.push({ name: 'Actividades', params: { moduloId: slotProps.data.id } })" />
                         </template>
 
                     </Column>
 
                 </DataTable>
-                <div v-else style="text-align: center; padding: 30px;">
-                    <p class=""> No hay datos disponibles </p>
-                </div>
+
                 <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog"  :modal="true"
                     class="p-fluid">
                     <div class="field">
