@@ -149,8 +149,8 @@ const router = createRouter({
                   },
                   {
                     path: '/categorias/activiades/:categoriaId',
-                    name: 'ActividadesCrud',
-                    component: () => import('@/views/pages/Actividades.vue'),
+                    name: 'ActividadesCrudPictograma',
+                    component: () => import('@/views/pages/ActividadesPictograma.vue'),
                     props: true // Esto permite recibir el parámetro como una propiedad en el componente
                   },
 
@@ -158,7 +158,12 @@ const router = createRouter({
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')
-                }
+                },
+                {
+                    path: '/jugar',
+                    name: 'jugar',
+                    component: () => import('@/views/pages/Actividades.vue')                
+                },
             ]
         },
         {

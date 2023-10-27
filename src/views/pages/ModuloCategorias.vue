@@ -3,8 +3,6 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-
-
 import { useVuelidate } from '@vuelidate/core'
 
 import { useRoute } from 'vue-router';
@@ -14,7 +12,7 @@ import { useRouter } from 'vue-router';
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
 import { required, minLength } from '@vuelidate/validators'
-import {getuseToast} from '@/composables/usarToast';
+import { getuseToast } from '@/composables/usarToast';
 
 
 
@@ -33,6 +31,7 @@ const modulo = ref(null);
 const router = useRouter();
 const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 const nombreDialog = ref("null");
+const tipo= ref(null);
 //funcion para traer el modulo y su Factulizacion cunado sea necesario
 
 
@@ -49,7 +48,7 @@ const v = useVuelidate(rules, selectedCategoria);
 
 onMounted(async () => {
 
-    obtnerNombreMdulo();
+    obtenerNombreModulo();
     await fetchCategorias();
 
 });
@@ -121,12 +120,16 @@ const hideDialog = () => {
 
 };
 
-const obtnerNombreMdulo = async () => {
+const obtenerNombreModulo = async () => {
     try {
         const response = await axios.get(`${baseUrl}v1/modulos/${moduloId.value}/`);
         if (response.status === 200) {
+            //se obtiene el nombre del modulo para mostrarlo en la vista
             modulo.value = response.data.nombre;
-            console.log(modulo.value);
+            console.log("nombre del modulo " + modulo.value);
+            //se obtiene el tipo de modulo para redireccionar a la vista de actividades correspondiente
+            tipo.value = response.data.tipo;
+            console.log(tipo.value);
 
         }
 
@@ -231,9 +234,26 @@ const customBase64Uploader = async (event) => {
     mostrarInfo('Éxito', 'La imagen se ha cargado correctamente');
 };
 const goBack = () => {
-    router.go(-1);
-  };
+    //redireccionar a la vista anterior que en este caso es a la de modulos
+    router.push({ name: 'crudmodulos' });
+};
 
+
+const verActividades = (categoriaId) => {
+    console.log('ver actividades');
+    console.log('Categoria Id'+categoriaId);
+    console.log('Tipo de actividad '+ tipo.value);
+    //llamamos a la funcion que redirecciona a la vista de actividades segun el tipo de actividad que sea
+    if (tipo.value=== 1 ) {
+        console.log('entro a tipo 1');
+        router.push({ name: 'ActividadesCrudPictograma', params: { categoriaId: categoriaId } });
+    } else if (tipo.value === 2) {
+        router.push({ name: 'NombreComponenteTipo2', params: { categoriaId: categoriaId } });
+    } else if (tipo.value === 3 ) {
+        router.push({ name: 'NombreComponenteTipo3', params: { categoriaId: categoriaId } });
+    }
+    // Agrega más condiciones según los tipos de actividad que tengas
+};
 </script>
 
 <template>
@@ -245,15 +265,17 @@ const goBack = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block" @click="goBack" />
-                            <Button label="Nueva Categoria" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                          
+                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block"
+                                @click="goBack" />
+                            <Button label="Nueva Categoria" icon="pi pi-plus" class="p-button-success mr-2"
+                                @click="openNew" />
+
                         </div>
                     </template>
                 </Toolbar>
 
-                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedCategoria" dataKey="id" :paginator="true"
-                    :rows="5" tableStyle="flex justify-content-between"
+                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedCategoria"
+                    dataKey="id" :paginator="true" :rows="5" tableStyle="flex justify-content-between"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Modulos"
@@ -275,7 +297,7 @@ const goBack = () => {
                     <Column header="Imagen">
                         <template #body="slotProps">
                             <span class="p-column-title">Imagen</span>
-                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.image" class="shadow-2" width="100"
+                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.nombre" class="shadow-2" width="100"
                                 preview />
                         </template>
                     </Column>
@@ -290,7 +312,7 @@ const goBack = () => {
                     <Column header="Actividades">
                         <template #body="slotProps">
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
-                                @click="$router.push({ name: 'ActividadesCrud', params: { categoriaId: slotProps.data.id } })" />
+                                @click="verActividades(slotProps.data.id)" />
                         </template>
 
                     </Column>
@@ -299,7 +321,7 @@ const goBack = () => {
                 <div v-else style="text-align: center; padding: 30px;">
                     <p class=""> No hay datos disponibles </p>
                 </div>
-                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog"  :modal="true"
+                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog" :modal="true"
                     class="p-fluid">
                     <div class="field">
                         <label for="nombre">Nombre</label>
@@ -312,9 +334,8 @@ const goBack = () => {
                     <div class="field">
                         <label for="descripcion">Descripción</label>
                         <Textarea id="descripcion" v-model="selectedCategoria.descripcion" required="true" rows="3"
-                            cols="20" :class="{ 'p-invalid': v.descripcion.$error }" 
-                            placeholder="Escribe la descripción de la categoria aquí"
-                            />
+                            cols="20" :class="{ 'p-invalid': v.descripcion.$error }"
+                            placeholder="Escribe la descripción de la categoria aquí" />
                         <small class="p-error" v-if="v.descripcion.$error"> La Descripción tiene que tener por al menos 10
                             caracteres </small>
                     </div>
@@ -330,7 +351,7 @@ const goBack = () => {
                             <small class="p-error" v-if="v.imagen.$error"> Tienes que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedCategoria.imagen" :alt="selectedCategoria.image" width="150" class="w-auto"
+                            <Image :src="selectedCategoria.imagen" width="150" class="w-auto"
                                 preview />
                         </div>
                     </div>

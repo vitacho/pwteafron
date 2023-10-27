@@ -144,10 +144,6 @@ const customBase64Uploader = async (event) => {
     mostrarInfo('', 'La imagen se ha cargado correctamente');
 };
 
-const goBack = () => {
-    router.go(-1);
-  };
-
 
 </script>
 
@@ -180,7 +176,7 @@ const goBack = () => {
                     <Column header="Imagen">
                         <template #body="slotProps">
                             <span class="p-column-title">Imagen</span>
-                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.image" class="shadow-2" width="100"
+                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.nombre" class="shadow-2" width="100"
                                 preview />
                         </template>
                     </Column>

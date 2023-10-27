@@ -21,15 +21,15 @@ import {getuseToast} from '@/composables/usarToast';
 const route = useRoute();
 
 const categorias = ref([]); // Aquí se almacena la lista de módulos
-const selectedCategoria = ref(null); // Aquí se almacena el módulo seleccionado para edición
+const selectedActividad = ref(null); // Aquí se almacena el módulo seleccionado para edición
 const moduloDialog = ref(false); // Dialogo de edición y de nuevo
 const eliminarCategoriaDialog = ref(false); // Dialogo de confirmación de eliminación
 const submitted = ref(false); // Indica si el formulario ha sido enviado
 const base64File = ref(null); // Aquí se almacena la imagen seleccionada para subir en base64
 const baseUrl = getBaseUrl();
 const cargando = ref(false);
-const moduloId = ref(route.params.moduloId);
-const modulo = ref(null);
+const categoriaId = ref(route.params.categoriaId);
+const categoria = ref(null);
 const router = useRouter();
 const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 const nombreDialog = ref("null");
@@ -45,46 +45,44 @@ const rules = {
     // Agrega las reglas para otros campos aquí
 };
 
-const v = useVuelidate(rules, selectedCategoria);
-
-
+const v = useVuelidate(rules, selectedActividad);
 
 onMounted(async () => {
-    obtnerNombreMdulo();
-    await fetchCategorias();
+    console.log('categoriaId', categoriaId.value);
+    obtenerNombreCategoria();
+    await fetchActividades();
+
 });
 
 
 //funcion para traer las categorias y su actulizacion cunado sea necesario 
-const fetchCategorias = async () => {
+const fetchActividades = async () => {
     try {
-
-        const response = await axios.get(`${baseUrl}v1/modulos/${moduloId.value}/modulo-categorias/`);
-        // const responsee = await axios.get(`${baseUrl}v1/modulos/${moduloId.value}`);
-
-        console.log(moduloId.value)
+        
+        const response = await axios.get(`${baseUrl}v1/actividades/pictograma/${categoriaId.value}/`);
+        console.log(response);
         if (response.status === 200) {
             categorias.value = response.data;
         }
 
 
     } catch (error) {
-        router.replace({ name: '404' });
-        categorias.value = {};
+       // router.replace({ name: '404' });
+        actividades.value = {};
         console.log(error);
 
     }
 };
 
 const editarCategoria = (categoria) => {
-    selectedCategoria.value = { ...categoria }; // Copia el módulo seleccionado para edición
+    selectedActividad.value = { ...categoria }; // Copia el módulo seleccionado para edición
     moduloDialog.value = true;
     v.value.$reset(); // Limpia las validaciones
-    nombreDialog.value = 'Editar Categoria';
+    nombreDialog.value = 'Editar Actividad Pictograma';
 };
 
 const eliminarCategoriaConfirmar = (categoria) => {
-    selectedCategoria.value = categoria;
+    selectedActividad.value = categoria;
     eliminarCategoriaDialog.value = true;
 
 };
@@ -95,54 +93,52 @@ const eliminarCategoria = async () => {
     try {
         //obtenemos el id de la categoria a elimina
         const fromData = new FormData();
-        fromData.append('id', selectedCategoria.value.id);
+        fromData.append('id', selectedActividad.value.id);
         fromData.append('activo', false);
-        const response = await axios.patch(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`, fromData);
-        //const response = await axios.delete(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`);
+        //se cambia el estado de la actividad a false para que no se muestre en la lista de actividades pictogramas
+        const response = await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, fromData);
         if (response.status === 200) {
             //recaragamos la tabla
-            
             mostrarExito('Éxito', 'La categoria se ha eliminado correctamente');
-            fetchCategorias();
+            fetchActiviades();
             eliminarCategoriaDialog.value = false;
-            selectedCategoria.value = {};
-
+            selectedActividad.value = {};
         }
-
     } catch (error) {
-        mostrarError('Error', 'No se puede eliminar la Categoria porque tiene actividades asociadas');
+        mostrarError('Error', 'No se puede eliminar la Activiadad por que tiene datos relacionados');
         mostrarError('Error', error);
     }
 };
 
 const hideDialog = () => {
     moduloDialog.value = false;
-    selectedCategoria.value = null; // Limpia el módulo seleccionado al cerrar el diálogo
+    selectedActividad.value = null; // Limpia el módulo seleccionado al cerrar el diálogo
     submitted.value = false; // Limpia el indicador de envío de formulario
     base64File.value = null; // Limpia la imagen seleccionada
-    fetchCategorias(); //recargasmos la tabla
-    selectedCategoria.value = {}; //limpiamos el objeto de la categoria
+    fetchActiviades(); //recargasmos la tabla
+    selectedActividad.value = {}; //limpiamos el objeto de la categoria
 
 };
 
-const obtnerNombreMdulo = async () => {
+const obtenerNombreCategoria = async () => {
     try {
-        const response = await axios.get(`${baseUrl}v1/modulos/${moduloId.value}/`);
+        //obtenemos el nombre de la ctaegoria en la cual esta el usuario
+        const response = await axios.get(`${baseUrl}v1/categorias/${categoriaId.value}/`);
         if (response.status === 200) {
-            modulo.value = response.data.nombre;
-            console.log(modulo.value);
+            categoria.value = response.data.nombre;
+            console.log(categoria.value);
 
         }
 
     } catch (error) {
-        console.log('El mosulo no existe');
+        console.log('La categoria no existe');
         router.replace({ name: '404' });
         console.log(error);
     }
 };
 
 //metodo para guardar el modulo
-const guardarCategoria = async () => {
+const guardarActividad = async () => {
     try {
         cargando.value = true;
         // Validar el formulario con Vuelidate
@@ -154,9 +150,9 @@ const guardarCategoria = async () => {
             cargando.value = false;
         } else {
             const formData = new FormData();
-            formData.append('nombre', selectedCategoria.value.nombre);
-            formData.append('descripcion', selectedCategoria.value.descripcion);
-            formData.append('modulo', moduloId.value);
+            formData.append('nombre', selectedActividad.value.nombre);
+            formData.append('descripcion', selectedActividad.value.descripcion);
+            formData.append('categoria', categoriaId.value);
             //cuando hay una imagen seleccionada
 
             //cuando hay una imagen seleccionada
@@ -168,22 +164,22 @@ const guardarCategoria = async () => {
                 formData.append('imagen', base64Blob, `modulo.${type}`);
             }
 
-            console.log('Módulo a guardar:', selectedCategoria.value);
+            console.log('Módulo a guardar:', selectedActividad.value);
             console.log('Formulario a enviar:', formData.get('activo'));
             // Si el módulo existe, actualizarlo
-            if (selectedCategoria.value.id) {
+            if (selectedActividad.value.id) {
                 // Actualizar el módulo
-                // /api/v1/categorias/
-                const response = await axios.patch(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`, formData);
+                // /api/v1/actividades/
+                const response = await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, formData);
 
-                // Actualiza selectedCategoria directamente con los datos de respuesta
-                selectedCategoria.value = response.data;
+                // Actualiza selectedActividad directamente con los datos de respuesta
+                selectedActividad.value = response.data;
                 //recaragamos la tabla
                 mostrarExito('Éxito', 'El módulo se ha actualizado correctamente');
 
 
             } else {
-                const response = await axios.post(`${baseUrl}v1/categorias/`, formData);
+                const response = await axios.post(`${baseUrl}v1/actividades_pictograma/`, formData);
                 if (response.status === 201) {
                     //recaragamos la tabla
                     mostrarExito('Éxito', 'La categoria se ha creado correctamente');
@@ -192,7 +188,7 @@ const guardarCategoria = async () => {
             hideDialog();
             cargando.value = false;
             base64File.value = null; // Limpia la imagen seleccionada
-            selectedCategoria.value = {};
+            selectedActividad.value = {};
 
         }
     } catch (error) {
@@ -212,10 +208,10 @@ const guardarCategoria = async () => {
 };
 
 const openNew = () => {
-    selectedCategoria.value = {};
+    selectedActividad.value = {};
     moduloDialog.value = true;
     v.value.$reset();
-    nombreDialog.value = 'Nueva Categoria';
+    nombreDialog.value = 'Nueva Activiadad Pictograma';
 };
 
 
@@ -230,11 +226,14 @@ const customBase64Uploader = async (event) => {
         const base64data = reader.result;
         base64File.value = base64data;
         //converitmos ka imagen en base 64
-        selectedCategoria.value.imagen = base64data;
+        selectedActividad.value.imagen = base64data;
     };
     mostrarInfo('Éxito', 'La imagen se ha cargado correctamente');
 };
 const goBack = () => {
+    //redicionar a la pagina anterior que corresponde a la lista de categorias utilizando categoriaId
+    router.push({name:'Categorias',params:{categoriaId:categoriaId.value}})
+
     router.go(-1);
   };
 
@@ -245,19 +244,18 @@ const goBack = () => {
         <div class="col-12">
             <div class="card">
                 <Toast />
-                <h5>Gestión de Categorias del modulo {{ modulo }}</h5>
+                <h5>Gestión de actividades de la categoria {{ categoria }}</h5>
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary" @click="goBack" />
-                            <Button label="Nueva Categoria" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block" @click="goBack" />
+                            <Button label="Nueva Actividad" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
                           
                         </div>
                     </template>
                 </Toolbar>
 
-
-                <DataTable ref="dt" :value="categorias" v-model:selection="selectedCategoria" dataKey="id" :paginator="true"
+                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedActividad" dataKey="id" :paginator="true"
                     :rows="5" tableStyle="flex justify-content-between"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
@@ -280,7 +278,7 @@ const goBack = () => {
                     <Column header="Imagen">
                         <template #body="slotProps">
                             <span class="p-column-title">Imagen</span>
-                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.image" class="shadow-2" width="100"
+                            <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.nombre.imagen_pictograma" class="shadow-2" width="100"
                                 preview />
                         </template>
                     </Column>
@@ -295,18 +293,20 @@ const goBack = () => {
                     <Column header="Actividades">
                         <template #body="slotProps">
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
-                                @click="$router.push({ name: 'Actividades', params: { moduloId: slotProps.data.id } })" />
+                                @click="$router.push({ name: 'ActividadesCrud', params: { categoriaId: slotProps.data.id } })" />
                         </template>
 
                     </Column>
 
                 </DataTable>
-
+                <div v-else style="text-align: center; padding: 30px;">
+                    <p class=""> No hay datos disponibles </p>
+                </div>
                 <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog"  :modal="true"
                     class="p-fluid">
                     <div class="field">
                         <label for="nombre">Nombre</label>
-                        <InputText id="nombre" v-model="selectedCategoria.nombre" required="true" autofocus
+                        <InputText id="nombre" v-model="selectedActividad.nombre" required="true" autofocus
                             :class="{ 'p-invalid': v.nombre.$error }"
                             placeholder="Escribe el nombre del categoria aquí ejemplo Mátematica" />
                         <small class="p-error" v-if="v.nombre.$error"> El Nombre tiene que tener por al menos 3 caracteres
@@ -314,7 +314,7 @@ const goBack = () => {
                     </div>
                     <div class="field">
                         <label for="descripcion">Descripción</label>
-                        <Textarea id="descripcion" v-model="selectedCategoria.descripcion" required="true" rows="3"
+                        <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true" rows="3"
                             cols="20" :class="{ 'p-invalid': v.descripcion.$error }" 
                             placeholder="Escribe la descripción de la categoria aquí"
                             />
@@ -333,7 +333,7 @@ const goBack = () => {
                             <small class="p-error" v-if="v.imagen.$error"> Tienes que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedCategoria.imagen" :alt="selectedCategoria.image" width="150" class="w-auto"
+                            <Image :src="selectedActividad.imagen" :alt="selectedActividad.image" width="150" class="w-auto"
                                 preview />
                         </div>
                     </div>
@@ -341,7 +341,7 @@ const goBack = () => {
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
                         <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text"
-                            @click="guardarCategoria">
+                            @click="guardarActividad">
                         </Button>
                     </template>
                 </Dialog>
@@ -351,7 +351,7 @@ const goBack = () => {
                     :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="selectedCategoria">¿Estas seguro de eliminar esta categoria?</span>
+                        <span v-if="selectedActividad">¿Estas seguro de eliminar esta categoria?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text"
