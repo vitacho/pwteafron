@@ -1,11 +1,8 @@
 <script setup>
-
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-
-
-import { useVuelidate } from '@vuelidate/core'
+import { useVuelidate } from '@vuelidate/core';
 
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
@@ -13,35 +10,34 @@ import { useRouter } from 'vue-router';
 //importaciones de composables
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
-import { required, minLength } from '@vuelidate/validators'
-import {getuseToast} from '@/composables/usarToast';
-
-
+import { required, minLength } from '@vuelidate/validators';
+import { getuseToast } from '@/composables/usarToast';
 
 const route = useRoute();
 
 const categorias = ref([]); // Aquí se almacena la lista de módulos
 const selectedActividad = ref(null); // Aquí se almacena el módulo seleccionado para edición
 const moduloDialog = ref(false); // Dialogo de edición y de nuevo
-const eliminarCategoriaDialog = ref(false); // Dialogo de confirmación de eliminación
+const eliminarActividadDialog = ref(false); // Dialogo de confirmación de eliminación
 const submitted = ref(false); // Indica si el formulario ha sido enviado
 const base64File = ref(null); // Aquí se almacena la imagen seleccionada para subir en base64
 const baseUrl = getBaseUrl();
 const cargando = ref(false);
 const categoriaId = ref(route.params.categoriaId);
 const categoria = ref(null);
+const modulocatgoriaId = ref(null);
 const router = useRouter();
 const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
-const nombreDialog = ref("null");
+const nombreDialog = ref('null');
+const isActivo = ref(false);
 //funcion para traer el modulo y su Factulizacion cunado sea necesario
-
-
 
 // Validación de formulario con Vuelidate
 const rules = {
-    nombre: { required, minLength: minLength(3) }, // Mínimo de 3 caracteres
-    descripcion: { required, minLength: minLength(10) },// Mínimo de 10 caracteres
-    imagen: { required },
+    nombre: { required }, // Mínimo de 3 caracteres
+    descripcion: {}, // Mínimo de 10 caracteres
+    imagen_pictograma: { required }
+
     // Agrega las reglas para otros campos aquí
 };
 
@@ -51,26 +47,20 @@ onMounted(async () => {
     console.log('categoriaId', categoriaId.value);
     obtenerNombreCategoria();
     await fetchActividades();
-
 });
 
-
-//funcion para traer las categorias y su actulizacion cunado sea necesario 
+//funcion para traer las categorias y su actulizacion cunado sea necesario
 const fetchActividades = async () => {
     try {
-        
         const response = await axios.get(`${baseUrl}v1/actividades/pictograma/${categoriaId.value}/`);
         console.log(response);
         if (response.status === 200) {
             categorias.value = response.data;
         }
-
-
     } catch (error) {
-       // router.replace({ name: '404' });
+        // router.replace({ name: '404' });
         actividades.value = {};
         console.log(error);
-
     }
 };
 
@@ -81,14 +71,12 @@ const editarCategoria = (categoria) => {
     nombreDialog.value = 'Editar Actividad Pictograma';
 };
 
-const eliminarCategoriaConfirmar = (categoria) => {
+const eliminarActividadConfirmar = (categoria) => {
     selectedActividad.value = categoria;
-    eliminarCategoriaDialog.value = true;
-
+    eliminarActividadDialog.value = true;
 };
 
-
-const eliminarCategoria = async () => {
+const eliminarActividad = async () => {
     console.log('eliminar');
     try {
         //obtenemos el id de la categoria a elimina
@@ -99,13 +87,13 @@ const eliminarCategoria = async () => {
         const response = await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, fromData);
         if (response.status === 200) {
             //recaragamos la tabla
-            mostrarExito('Éxito', 'La categoria se ha eliminado correctamente');
-            fetchActiviades();
-            eliminarCategoriaDialog.value = false;
+            mostrarExito('Éxito', 'La categoria se ha desactivado correctamente');
+            fetchActividades();
+            eliminarActividadDialog.value = false;
             selectedActividad.value = {};
         }
     } catch (error) {
-        mostrarError('Error', 'No se puede eliminar la Activiadad por que tiene datos relacionados');
+        mostrarError('Error', 'Hubo un error al desactivar la actividad');
         mostrarError('Error', error);
     }
 };
@@ -115,9 +103,8 @@ const hideDialog = () => {
     selectedActividad.value = null; // Limpia el módulo seleccionado al cerrar el diálogo
     submitted.value = false; // Limpia el indicador de envío de formulario
     base64File.value = null; // Limpia la imagen seleccionada
-    fetchActiviades(); //recargasmos la tabla
+    fetchActividades(); //recargasmos la tabla
     selectedActividad.value = {}; //limpiamos el objeto de la categoria
-
 };
 
 const obtenerNombreCategoria = async () => {
@@ -126,10 +113,9 @@ const obtenerNombreCategoria = async () => {
         const response = await axios.get(`${baseUrl}v1/categorias/${categoriaId.value}/`);
         if (response.status === 200) {
             categoria.value = response.data.nombre;
+            modulocatgoriaId.value = response.data.modulo;
             console.log(categoria.value);
-
         }
-
     } catch (error) {
         console.log('La categoria no existe');
         router.replace({ name: '404' });
@@ -149,6 +135,7 @@ const guardarActividad = async () => {
             mostrarError('Error', 'Por favor, verifica los datos ingresados.');
             cargando.value = false;
         } else {
+            console.log("Se ingresa al else")
             const formData = new FormData();
             formData.append('nombre', selectedActividad.value.nombre);
             formData.append('descripcion', selectedActividad.value.descripcion);
@@ -157,18 +144,25 @@ const guardarActividad = async () => {
 
             //cuando hay una imagen seleccionada
             if (base64File.value) {
-                //obtener el tipo de iamgen de la imagen seleccionada
+            
+                //obtener el tipo de imagen de la imagen seleccionada
                 const type = getBase64Type(base64File.value);
                 //convertir la imagen seleccionada en un blob
                 const base64Blob = base64ToBlob(base64File.value, '.' + type);
-                formData.append('imagen', base64Blob, `modulo.${type}`);
+                //obtener el nombre de la imagen
+                //agregar la imagen al formData con el nombre de imagen
+                formData.append('imagen_pictograma', base64Blob, `${selectedActividad.value.nombre}.${type}`);
             }
 
             console.log('Módulo a guardar:', selectedActividad.value);
-            console.log('Formulario a enviar:', formData.get('activo'));
             // Si el módulo existe, actualizarlo
             if (selectedActividad.value.id) {
-                // Actualizar el módulo
+                console.log('Se ingresa al if de id');
+                //obetenemos el estado activo de la actividad
+                formData.append('activo', selectedActividad.value.activo);
+               
+                
+                // Actualizar la actividad
                 // /api/v1/actividades/
                 const response = await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, formData);
 
@@ -176,34 +170,30 @@ const guardarActividad = async () => {
                 selectedActividad.value = response.data;
                 //recaragamos la tabla
                 mostrarExito('Éxito', 'El módulo se ha actualizado correctamente');
-
-
             } else {
+                fromData.append('activo', true);
                 const response = await axios.post(`${baseUrl}v1/actividades_pictograma/`, formData);
                 if (response.status === 201) {
                     //recaragamos la tabla
-                    mostrarExito('Éxito', 'La categoria se ha creado correctamente');
+                    mostrarExito('Éxito', 'La Actividad se ha creado correctamente');
                 }
             }
             hideDialog();
             cargando.value = false;
             base64File.value = null; // Limpia la imagen seleccionada
             selectedActividad.value = {};
-
         }
     } catch (error) {
-
         if (error.code === 'ECONNABORTED') {
             mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
         } else if (error.response) {
             mostrarError('Error', error.response.data);
             mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
         } else {
-            mostrarError('Error', 'Ha ocurrido un error al actualizar el módulo. Por favor, verifica tu conexión a Internet.');
+            mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
             console.error('Error con la conexión a la API al actualizar el módulo:', error);
         }
         cargando.value = false;
-
     }
 };
 
@@ -213,8 +203,6 @@ const openNew = () => {
     v.value.$reset();
     nombreDialog.value = 'Nueva Activiadad Pictograma';
 };
-
-
 
 const customBase64Uploader = async (event) => {
     const file = event.files[0];
@@ -226,17 +214,16 @@ const customBase64Uploader = async (event) => {
         const base64data = reader.result;
         base64File.value = base64data;
         //converitmos ka imagen en base 64
-        selectedActividad.value.imagen = base64data;
+        selectedActividad.value.imagen_pictograma = base64data;
     };
     mostrarInfo('Éxito', 'La imagen se ha cargado correctamente');
 };
 const goBack = () => {
     //redicionar a la pagina anterior que corresponde a la lista de categorias utilizando categoriaId
-    router.push({name:'Categorias',params:{categoriaId:categoriaId.value}})
+    router.push({ name: 'Categorias', params: { moduloId: modulocatgoriaId.value } });
 
     router.go(-1);
-  };
-
+};
 </script>
 
 <template>
@@ -244,119 +231,131 @@ const goBack = () => {
         <div class="col-12">
             <div class="card">
                 <Toast />
-                <h5>Gestión de actividades de la categoria {{ categoria }}</h5>
+                <h5>Gestión de actividades de la categoría {{ categoria }}</h5>
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
                             <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block" @click="goBack" />
                             <Button label="Nueva Actividad" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
-                          
                         </div>
                     </template>
                 </Toolbar>
 
-                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedActividad" dataKey="id" :paginator="true"
-                    :rows="5" tableStyle="flex justify-content-between"
+                <DataTable
+                    v-if="categorias.length > 0"
+                    ref="dt"
+                    :value="categorias"
+                    v-model:selection="selectedActividad"
+                    dataKey="id"
+                    :paginator="true"
+                    :rows="5"
+                    tableStyle="flex justify-content-between"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Modulos"
-                    responsiveLayout="scroll">
+                    responsiveLayout="scroll"
+                >
                     <!-- Columnas de la tabla -->
-
-                    <Column field="nombre" header="Nombre" :sortable="true">
+                    <Column field="orden" header="Orden" :sortable="true">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Orden</span>
+                            {{ slotProps.data.orden }}
+                        </template>
+                    </Column>
+                    <Column field="estado" header="Estado" :sortable="true">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Estado</span>
+                            <i class="pi" :class="{ 'text-green-500 pi-check-circle': slotProps.data.activo, 'text-pink-500 pi-times-circle': !slotProps.data.activo }"></i>
+                            <span class="text-green-500 ml-3 font-medium" v-if="slotProps.data.activo"> Activo </span>
+                            <span class="text-pink-500 ml-3 font-medium" v-else> Desactivado </span>
+                        </template>
+                    </Column>
+                    <Column field="nombre" header="Nombre del Pictograma">
                         <template #body="slotProps">
                             <span class="p-column-title">Nombre</span>
                             {{ slotProps.data.nombre }}
                         </template>
                     </Column>
-                    <Column field="descripcion" header="Descripción" :sortable="true">
+                    <Column field="descripcion" header="Descripción de la actividad">
                         <template #body="slotProps">
                             <span class="p-column-title">Descripción</span>
                             {{ slotProps.data.descripcion }}
                         </template>
                     </Column>
+
                     <Column header="Imagen">
                         <template #body="slotProps">
                             <span class="p-column-title">Imagen</span>
-                            <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.nombre.imagen_pictograma" class="shadow-2" width="100"
-                                preview />
+                            <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre + ' Pitograma'" class="shadow-2" width="100" preview />
                         </template>
                     </Column>
-                    <Column header="Acción">
+                    <Column header="Estado">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                @click="editarCategoria(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning"
-                                @click="eliminarCategoriaConfirmar(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editarCategoria(slotProps.data)" />
+                            <Button v-if="slotProps.data.activo" icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="eliminarActividadConfirmar(slotProps.data)" />
                         </template>
                     </Column>
-                    <Column header="Actividades">
-                        <template #body="slotProps">
-                            <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
-                                @click="$router.push({ name: 'ActividadesCrud', params: { categoriaId: slotProps.data.id } })" />
-                        </template>
-
-                    </Column>
-
                 </DataTable>
-                <div v-else style="text-align: center; padding: 30px;">
-                    <p class=""> No hay datos disponibles </p>
+                <div v-else style="text-align: center; padding: 30px">
+                    <p class="">No hay datos disponibles</p>
                 </div>
-                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog"  :modal="true"
-                    class="p-fluid">
+                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog" :modal="true" class="p-fluid">
                     <div class="field">
                         <label for="nombre">Nombre</label>
-                        <InputText id="nombre" v-model="selectedActividad.nombre" required="true" autofocus
-                            :class="{ 'p-invalid': v.nombre.$error }"
-                            placeholder="Escribe el nombre del categoria aquí ejemplo Mátematica" />
-                        <small class="p-error" v-if="v.nombre.$error"> El Nombre tiene que tener por al menos 3 caracteres
-                        </small>
+                        <InputText id="nombre" v-model="selectedActividad.nombre" required="true" autofocus :class="{ 'p-invalid': v.nombre.$error }" placeholder="Escribe el nombre del categoria aquí ejemplo Mátematica" />
+                        <small class="p-error" v-if="v.nombre.$error"> El pictograma de la actividad debe de tener por al menos 1 caracteres </small>
                     </div>
                     <div class="field">
                         <label for="descripcion">Descripción</label>
-                        <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true" rows="3"
-                            cols="20" :class="{ 'p-invalid': v.descripcion.$error }" 
-                            placeholder="Escribe la descripción de la categoria aquí"
-                            />
-                        <small class="p-error" v-if="v.descripcion.$error"> La Descripción tiene que tener por al menos 10
-                            caracteres </small>
+                        <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true" rows="3" cols="20" :class="{ 'p-invalid': v.descripcion.$error }" placeholder="Escribe la descripción de la categoria aquí (Opcional)" />
+                    </div>
+                    <div class="field" v-if="nombreDialog == 'Editar Actividad Pictograma'">
+                        <label for="descripcion">Estado</label>
+                        <div class="field-checkbox mb-0">
+                            <Checkbox v-model="selectedActividad.activo" :binary="true" />
+                            <label for="checkOption1">Activo</label>
+                        </div>
                     </div>
                     <div class="field">
                         <div class="field">
-                            <FileUpload mode="basic" id="input-foto" name="imagen" accept="image/*" customUpload
-                                @uploader="customBase64Uploader" chooseLabel="Subir imagen"
+                            <FileUpload
+                                mode="basic"
+                                id="input-foto"
+                                name="imagen"
+                                accept="image/*"
+                                customUpload
+                                @uploader="customBase64Uploader"
+                                chooseLabel="Subir imagen"
                                 invalidFileSizeMessage="El tamaño máximo de la imagen permitido es 5MB"
                                 invalidFileLimitMessage="Solo se admite un archivo a la vez"
                                 invalidFileTypeMessage="Solo se admite formato de imagen PNG, JPG, JPEG"
-                                :maxFileSize="5000000" :showUploadButton="false" :showCancelButton="false" :auto="true">
+                                :maxFileSize="5000000"
+                                :showUploadButton="false"
+                                :showCancelButton="false"
+                                :auto="true"
+                            >
                             </FileUpload>
-                            <small class="p-error" v-if="v.imagen.$error"> Tienes que subir una imagen </small>
+                            <small class="p-error" v-if="v.imagen_pictograma.$error"> Se tiene que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedActividad.imagen" :alt="selectedActividad.image" width="150" class="w-auto"
-                                preview />
+                            <Image :src="selectedActividad.imagen_pictograma" width="150" class="w-auto" preview />
                         </div>
                     </div>
 
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text"
-                            @click="guardarActividad">
-                        </Button>
+                        <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text" @click="guardarActividad"> </Button>
                     </template>
                 </Dialog>
 
-
-                <Dialog v-model:visible="eliminarCategoriaDialog" :style="{ width: '450px' }" header="Confirmar"
-                    :modal="true">
+                <Dialog v-model:visible="eliminarActividadDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="selectedActividad">¿Estas seguro de eliminar esta categoria?</span>
+                        <span v-if="selectedActividad">¿Estás seguro de desactivar la actividad?</span>
                     </div>
                     <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text"
-                            @click="eliminarCategoriaDialog = false" />
-                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="eliminarCategoria" />
+                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="eliminarActividadDialog = false" />
+                        <Button label="Si" icon="pi pi-check" class="p-button-text" @click="eliminarActividad" />
                     </template>
                 </Dialog>
             </div>

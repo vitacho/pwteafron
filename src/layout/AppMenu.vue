@@ -12,7 +12,7 @@ const model = ref([
         label: 'Administración',
         items: [
             {
-                label: 'Modulos',
+                label: 'Módulos',
                 icon: 'pi pi-fw pi-pencil',
                 to: '/pages/modulos'
             },

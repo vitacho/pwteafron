@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
-import ProductService from '@/service/ProductService';
+
 import { useLayout } from '@/layout/composables/layout';
 
 const { isDarkTheme } = useLayout();
@@ -27,20 +27,14 @@ const lineData = reactive({
         }
     ]
 });
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-]);
+
 const lineOptions = ref(null);
-const productService = new ProductService();
 
 onMounted(() => {
-    productService.getProductsSmall().then((data) => (products.value = data));
+    
 });
 
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-};
+
 const applyLightTheme = () => {
     lineOptions.value = {
         plugins: {
@@ -162,7 +156,7 @@ watch(
                     <li class="flex align-items-center py-2 border-bottom-1 surface-border">
                         
                         <span class="text-900 line-height-3"
-                            >David Reinoso Quiere ir al baño
+                            >David Reinoso Quiere ir al bañodasdasdasdas
                         </span>
                     </li>
                 </ul>

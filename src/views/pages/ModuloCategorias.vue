@@ -164,7 +164,7 @@ const guardarCategoria = async () => {
                 const type = getBase64Type(base64File.value);
                 //convertir la imagen seleccionada en un blob
                 const base64Blob = base64ToBlob(base64File.value, '.' + type);
-                formData.append('imagen', base64Blob, `modulo.${type}`);
+                formData.append('imagen', base64Blob, `${selectedCategoria.value.nombre}.${type}`);
             }
 
             console.log('Módulo a guardar:', selectedCategoria.value);
@@ -244,10 +244,10 @@ const verActividades = (categoriaId) => {
     console.log('Categoria Id'+categoriaId);
     console.log('Tipo de actividad '+ tipo.value);
     //llamamos a la funcion que redirecciona a la vista de actividades segun el tipo de actividad que sea
-    if (tipo.value=== 1 ) {
-        console.log('entro a tipo 1');
+    if (tipo.value=== 'PIC' ) {
+        console.log('Se entra al tipo pictograma');
         router.push({ name: 'ActividadesCrudPictograma', params: { categoriaId: categoriaId } });
-    } else if (tipo.value === 2) {
+    } else if (tipo.value === "DIB") {
         router.push({ name: 'NombreComponenteTipo2', params: { categoriaId: categoriaId } });
     } else if (tipo.value === 3 ) {
         router.push({ name: 'NombreComponenteTipo3', params: { categoriaId: categoriaId } });
@@ -261,7 +261,7 @@ const verActividades = (categoriaId) => {
         <div class="col-12">
             <div class="card">
                 <Toast />
-                <h5>Gestión de Categorias del modulo {{ modulo }}</h5>
+                <h5>Gestión de Categorías del módulo {{ modulo }}</h5>
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
@@ -351,7 +351,7 @@ const verActividades = (categoriaId) => {
                             <small class="p-error" v-if="v.imagen.$error"> Tienes que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedCategoria.imagen" width="150" class="w-auto"
+                            <Image :src="selectedCategoria.imagen" :alt="selectedCategoria.nombre" width="150" class="w-auto"
                                 preview />
                         </div>
                     </div>
@@ -369,7 +369,7 @@ const verActividades = (categoriaId) => {
                     :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="selectedCategoria">¿Estas seguro de eliminar esta categoria?</span>
+                        <span v-if="selectedCategoria">¿Estás seguro de desactivar la categoría?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text"

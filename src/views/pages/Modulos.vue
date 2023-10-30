@@ -82,7 +82,7 @@ const guardarModulo = async () => {
                 const type = getBase64Type(base64File.value);
                 //convertir la imagen seleccionada en un blob
                 const base64Blob = base64ToBlob(base64File.value, '.' + type);
-                formData.append('imagen', base64Blob, `modulo.${type}`);
+                formData.append('imagen', base64Blob, `${selectedModule.value.nombre}.${type}`);
             }
 
 
@@ -186,7 +186,7 @@ const customBase64Uploader = async (event) => {
                                 @click="editarModulo(slotProps.data)" />
                         </template>
                     </Column>
-                    <Column header="Categorias">
+                    <Column header="Categorías">
                         <template #body="slotProps">
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
                                 @click="$router.push({ name: 'Categorias', params: { moduloId: slotProps.data.id } })" />
@@ -224,7 +224,7 @@ const customBase64Uploader = async (event) => {
                             </FileUpload>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedModule.imagen" :alt="selectedModule.image" width="150" class="w-auto"
+                            <Image :src="selectedModule.imagen" :alt="selectedModule.nombre" width="150" class="w-auto"
                                 preview />
                         </div>
                     </div>
