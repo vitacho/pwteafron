@@ -29,7 +29,7 @@ const modulocatgoriaId = ref(null);
 const router = useRouter();
 const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 const nombreDialog = ref('null');
-const isActivo = ref(false);
+
 //funcion para traer el modulo y su Factulizacion cunado sea necesario
 
 // Validación de formulario con Vuelidate
@@ -135,7 +135,7 @@ const guardarActividad = async () => {
             mostrarError('Error', 'Por favor, verifica los datos ingresados.');
             cargando.value = false;
         } else {
-            console.log("Se ingresa al else")
+            
             const formData = new FormData();
             formData.append('nombre', selectedActividad.value.nombre);
             formData.append('descripcion', selectedActividad.value.descripcion);
@@ -144,7 +144,6 @@ const guardarActividad = async () => {
 
             //cuando hay una imagen seleccionada
             if (base64File.value) {
-            
                 //obtener el tipo de imagen de la imagen seleccionada
                 const type = getBase64Type(base64File.value);
                 //convertir la imagen seleccionada en un blob
@@ -159,19 +158,14 @@ const guardarActividad = async () => {
             if (selectedActividad.value.id) {
                 console.log('Se ingresa al if de id');
                 //obetenemos el estado activo de la actividad
-                formData.append('activo', selectedActividad.value.activo);
-               
-                
+                formData.append('activo', selectedActividad.value.activo);            
                 // Actualizar la actividad
                 // /api/v1/actividades/
-                const response = await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, formData);
-
-                // Actualiza selectedActividad directamente con los datos de respuesta
-                selectedActividad.value = response.data;
-                //recaragamos la tabla
+                await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, formData);
                 mostrarExito('Éxito', 'El módulo se ha actualizado correctamente');
             } else {
-                fromData.append('activo', true);
+                
+                formData.append('activo', true);
                 const response = await axios.post(`${baseUrl}v1/actividades_pictograma/`, formData);
                 if (response.status === 201) {
                     //recaragamos la tabla

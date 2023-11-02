@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
+import AppLayoutJuegos from '@/layout/AppLayoutJuego.vue';
 
 const router = createRouter({
     history: createWebHashHistory(),
@@ -13,11 +14,7 @@ const router = createRouter({
                     name: 'dashboard',
                     component: () => import('@/views/Dashboard.vue')
                 },
-                {
-                    path: '/juegos',
-                    name: 'dashboardjuegos',
-                    component: () => import('@/views/Dashboardjuegos.vue')
-                },
+    
                 {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
@@ -201,7 +198,20 @@ const router = createRouter({
             path: '/:pathMatch(.*)*',
             name: '404',
             component: () => import('@/views/pages/NotFound.vue')
-        }
+        },
+        //componets para los juegos
+        {
+            path: '/juegos',
+            component: AppLayoutJuegos,
+            children:[
+                {
+                    path: '/juegos',
+                    name: 'dashboardjuegos',
+                    component: () => import('@/views/Dashboardjuegos.vue')
+                },
+
+            ]
+        },
 
 
     ]
