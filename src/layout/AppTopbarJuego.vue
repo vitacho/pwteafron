@@ -4,20 +4,25 @@ import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 
 import { getuseToast } from '@/composables/usarToast';
+import { fetchPosision } from '@/composables/useURL';
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
 const router = useRouter();
 const fecha = ref(new Date());
 const fechaFormato = ref(null);
+const weather = ref(null);
 
-onMounted(() => {
+onMounted(async () => {
     bindOutsideClickListener();
     fechaFormato.value = formatoFecha(fecha.value);
+    weather.value = await fetchPosision();
+    console.log(weather);
 });
 
 onBeforeUnmount(() => {
     unbindOutsideClickListener();
+
 });
 
 const formatoFecha = (date) => {
@@ -52,35 +57,57 @@ const isOutsideClicked = (event) => {
 </script>
 
 <template>
-    <div class="layout-topbar" :style="{ backgroundColor: '#FFFFDD',fontFamily: 'Comic Sans MS, cursive'}">
+    <div class="layout-topbar" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
         <div class="layout-topbar-logo">
-            <img src="layout/images/Sol.svg" alt="sol" />
-            <h5 :style="{fuente}"> Hoy esta nublado </h5>
+            <div class="estado-clima">
+
+                <img :src="`http://openweathermap.org/img/wn/${weather ? weather.icon : '01d'}.png`" alt="clima"  :style="{ width: '50px', height: '50px' }" >
+            </div>
+            <div class="topbar-icon">
+              
+                <h6>  {{ weather ? weather.message: 'No hay información disponible' }}</h6>
+                <h6>{{ fechaFormato }}</h6>
+            </div>
             
-            <h5>
-                {{ fechaFormato }}
-            </h5>
         </div>
-        
+
 
         <div class="layout-topbar-menu">
             <div class="topbar-icon">
-                <img src="icon1.png" />
-                <div>Texto 1</div>
+                <img src="layout/images/ayuda.svg" :style="{ height:'60px'}"/>
+                <div>Ayuda</div>
             </div>
 
             <div class="topbar-icon">
-                <img src="icon2.png" />
-                <div>Texto 2</div>
+                <img src="layout/images/banio.svg" :style="{ height:'60px' }" />
+                <div>Ir al baño</div>
             </div>
 
             <div class="topbar-icon">
-                <img src="icon3.png" />
-                <div>Texto 3</div>
+                <img src="layout/images/hambre.svg" :style="{ height:'60px' }" />
+                <div>Hambre</div>
             </div>
         </div>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
+.layout-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    height: 6rem;
+    background-color: #FFFFDD;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+
+}
+.topbar-icon h6 {
+    margin: 0.5rem 0;  /* Ajusta este valor según tus necesidades */
+}
+.topbar-icon {
+    margin: 10px;
+}
+
 </style>
