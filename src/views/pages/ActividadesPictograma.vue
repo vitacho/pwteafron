@@ -216,7 +216,6 @@ const goBack = () => {
     //redicionar a la pagina anterior que corresponde a la lista de categorias utilizando categoriaId
     router.push({ name: 'Categorias', params: { moduloId: modulocatgoriaId.value } });
 
-    router.go(-1);
 };
 </script>
 

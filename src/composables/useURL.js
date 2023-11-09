@@ -1,19 +1,18 @@
 import axios from 'axios';
 
 const baseUrl = ' http://127.0.0.1:8000/api/';
-//const baseUrl = 'https://j1nwcn2l-8000.use2.devtunnels.ms/api/'
+const api = '01fec15fd2083f050b8f9fb7414193d8';
+
+//const baseUrl = 'https://j1nwcn2l-8000.use2.devtunnels.ms/api/';
 export function getBaseUrl() {
     return baseUrl;
 }
 
 //API del clima openweathermap
 async function fetchData(latitud, longitud) {
-    const api = '01fec15fd2083f050b8f9fb7414193d8';
     try {
         const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?units=metric&lat=${latitud}&lon=${longitud}&appid=${api}&lang=es`);
-        console.log(response);
         const weather = setWeather(response.data);
-
         return weather;
     } catch (error) {
         console.error(error);
@@ -23,25 +22,35 @@ async function fetchData(latitud, longitud) {
 function setWeather(data) {
     const weather = {
         city: data.name,
-        country: data.sys.country,
         description: data.weather[0].description,
-        temperature: Math.round(data.main.temp),
-        feelsLike: Math.round(data.main.feels_like),
+        main: data.weather[0].main,
+        temp: data.main.temp,
+        temp_min: data.main.temp_min,
+        temp_max: data.main.temp_max,
         humidity: data.main.humidity,
-        wind: Math.round(data.wind.speed),
-        icon: data.weather[0].icon,
-        condition: data.weather[0].mai,
-        message: ''
+        pressure: data.main.pressure,
+        wind: data.wind.speed,
+        clouds: data.clouds.all,
+        message: '',
+        icon: data.weather[0].icon
     };
 
     if (weather.description === 'cielo despejado') {
         weather.message = 'El cielo está despejado.';
+    } else if (weather.description === 'algo de nubes') {
+        weather.message = 'EL cielo esta con algo de nubes.';
+    } else if (weather.description === 'nubes dispersas') {
+        weather.message = 'El cielo tiene nubes dispersas.';
     } else if (weather.description === 'parcialmente nublado') {
         weather.message = 'Está parcialmente nublado ahora.';
     } else if (weather.description === 'mayormente nublado') {
         weather.message = 'Ahora está mayormente nublado.';
     } else if (weather.description === 'nublado') {
         weather.message = 'Está nublado en este momento.';
+    } else if (weather.description === 'nubes') {
+        weather.message = 'Está nublado en este momento.';
+    } else if (weather.description === 'muy nuboso') {
+        weather.message = 'Está muy nublado en este momento.';
     } else if (weather.description == 'lluvia ligera') {
         weather.message = 'Está lloviendo ligeramente ahora.';
     } else if (weather.description === 'lluvia moderada') {

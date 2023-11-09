@@ -118,6 +118,17 @@ const model = ref([
                 icon: 'pi pi-fw pi-star'
             }
         ]
+    },
+    {
+        label: 'Juegos',
+        items: [
+            {
+                label: 'Juegos',
+                icon: 'pi pi-fw pi-question',
+                to: '/juegos'
+            },
+            
+        ]
     }
 ]);
 </script>

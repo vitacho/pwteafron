@@ -5,8 +5,8 @@ import axios from 'axios';
 
 import { useVuelidate } from '@vuelidate/core'
 
-import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
+
+import { useRouter,useRoute } from 'vue-router';
 
 //importaciones de composables
 import { getBaseUrl } from '@/composables/useURL';

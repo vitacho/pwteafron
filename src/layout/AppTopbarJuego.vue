@@ -61,30 +61,30 @@ const isOutsideClicked = (event) => {
         <div class="layout-topbar-logo">
             <div class="estado-clima">
 
-                <img :src="`http://openweathermap.org/img/wn/${weather ? weather.icon : '01d'}.png`" alt="clima"  :style="{ width: '50px', height: '50px' }" >
+                <img :src="`http://openweathermap.org/img/wn/${weather ? weather.icon : '01d'}.png`" alt="clima"
+                    :style="{ width: '50px', height: '50px' }">
             </div>
             <div class="topbar-icon">
-              
-                <h6>  {{ weather ? weather.message: 'No hay información disponible' }}</h6>
+
+                <h6> {{ weather ? weather.message : 'No hay información disponible' }}</h6>
                 <h6>{{ fechaFormato }}</h6>
             </div>
-            
-        </div>
 
+        </div>
 
         <div class="layout-topbar-menu">
             <div class="topbar-icon">
-                <img src="layout/images/ayuda.svg" :style="{ height:'60px'}"/>
+                <img src="layout/images/ayuda.svg" :style="{ height: '60px' }" />
                 <div>Ayuda</div>
             </div>
 
             <div class="topbar-icon">
-                <img src="layout/images/banio.svg" :style="{ height:'60px' }" />
+                <img src="layout/images/banio.svg" :style="{ height: '60px' }" />
                 <div>Ir al baño</div>
             </div>
 
             <div class="topbar-icon">
-                <img src="layout/images/hambre.svg" :style="{ height:'60px' }" />
+                <img src="layout/images/hambre.svg" :style="{ height: '60px' }" />
                 <div>Hambre</div>
             </div>
         </div>
@@ -103,11 +103,11 @@ const isOutsideClicked = (event) => {
     z-index: 1000;
 
 }
+
 .topbar-icon h6 {
-    margin: 0.5rem 0;  /* Ajusta este valor según tus necesidades */
-}
-.topbar-icon {
-    margin: 10px;
+    margin: 0.5rem 0;
 }
 
-</style>
+.topbar-icon {
+    margin: 10px;
+}</style>

@@ -14,7 +14,6 @@ const router = createRouter({
                     name: 'dashboard',
                     component: () => import('@/views/Dashboard.vue')
                 },
-    
                 {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
@@ -144,28 +143,23 @@ const router = createRouter({
                     component: () => import('@/views/pages/Modulos.vue')
                 },
                 {
-                    path: '/categorias/:moduloId',
+                    path: 'modulos/categorias/:moduloId',
                     name: 'Categorias',
                     component: () => import('@/views/pages/ModuloCategorias.vue'),
                     props: true // Esto permite recibir el parámetro como una propiedad en el componente
-                  },
-                  {
-                    path: '/categorias/activiades/:categoriaId',
+                },
+                {
+                    path: 'modulos/categorias/activiades/:categoriaId',
                     name: 'ActividadesCrudPictograma',
                     component: () => import('@/views/pages/ActividadesPictograma.vue'),
                     props: true // Esto permite recibir el parámetro como una propiedad en el componente
-                  },
+                },
 
                 {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')
-                },
-                {
-                    path: '/jugar',
-                    name: 'jugar',
-                    component: () => import('@/views/pages/Actividades.vue')                
-                },
+                }
             ]
         },
         {
@@ -203,17 +197,28 @@ const router = createRouter({
         {
             path: '/juegos',
             component: AppLayoutJuegos,
-            children:[
+            children: [
                 {
                     path: '/juegos',
                     name: 'dashboardjuegos',
                     component: () => import('@/views/Dashboardjuegos.vue')
                 },
 
+                {
+                    path: '/juegos/categorias/:moduloId',
+                    name: 'CategoriasJuegos',
+                    component: () => import('@/views/pages/juegos/Categorias.vue'),
+                    props: true // Esto permite recibir el parámetro como una propiedad en el componente
+                },
+                {
+                    path: '/juegos/categorias/pictograma/:categoriaId',
+                    name: 'ActividaPictogramaJuegos',
+                    component: () => import('@/views/pages/juegos/ActvidadPictograma.vue'),
+                    props: true // Esto permite recibir el parámetro como una propiedad en el componente
+                },
+
             ]
-        },
-
-
+        }
     ]
 });
 
