@@ -59,10 +59,10 @@ const isOutsideClicked = (event) => {
 <template>
     <div class="layout-topbar" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
         <div class="layout-topbar-logo">
-            <div class="estado-clima">
+            <div class="imagen-tolbar">
 
-                <img :src="`http://openweathermap.org/img/wn/${weather ? weather.icon : '01d'}.png`" alt="clima"
-                    :style="{ width: '50px', height: '50px' }">
+                <img :src="`/layout/images/clima/${weather ? weather.icon : '01d'}.svg`" alt="clima"
+                    :style="{ width: '75px', height: '75px' }">
             </div>
             <div class="topbar-icon">
 
@@ -73,17 +73,17 @@ const isOutsideClicked = (event) => {
         </div>
 
         <div class="layout-topbar-menu">
-            <div class="topbar-icon">
+            <div class="topbar-icon imagen-tolbar">
                 <img src="layout/images/ayuda.svg" :style="{ height: '60px' }" />
                 <div>Ayuda</div>
             </div>
 
-            <div class="topbar-icon">
+            <div class="topbar-icon imagen-tolbar">
                 <img src="layout/images/banio.svg" :style="{ height: '60px' }" />
                 <div>Ir al baño</div>
             </div>
 
-            <div class="topbar-icon">
+            <div class="topbar-icon imagen-tolbar">
                 <img src="layout/images/hambre.svg" :style="{ height: '60px' }" />
                 <div>Hambre</div>
             </div>
@@ -110,4 +110,15 @@ const isOutsideClicked = (event) => {
 
 .topbar-icon {
     margin: 10px;
-}</style>
+}
+
+.estado-clima img:hover {
+    transform: scale(1.8);
+    transition: transform 0.3s ease-in-out;
+}
+.imagen-tolbar img:hover {
+    transform: scale(1.5);
+    transition: transform 0.8s ease-in-out;
+}
+
+</style>

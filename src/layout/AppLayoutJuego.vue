@@ -17,7 +17,9 @@ import { useLayout } from '@/layout/composables/layout';
         <app-topbar></app-topbar>
         <div class="layout-main-container">
           
+            <div class="layout-content">
                 <router-view></router-view>
+            </div>
             
         </div>
         <div class="layout-mask"></div>

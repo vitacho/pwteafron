@@ -4,7 +4,8 @@ import axios from 'axios';
 import { getBaseUrl } from '@/composables/useURL';
 import { getuseToast } from '@/composables/usarToast';
 import { useRouter } from 'vue-router';
-
+import { getresponsiveOptins } from '@/composables/useJuegos';
+const { responsiveOptions } = getresponsiveOptins();
 
 //variables 
 const baseUrl = getBaseUrl();
@@ -34,28 +35,6 @@ const redirecCategorias = (id) => {
    }
 };
 
-const responsiveOptions = ref([
-   {
-      breakpoint: '1400px',
-      numVisible: 2,
-      numScroll: 1
-   },
-   {
-      breakpoint: '1199px',
-      numVisible: 3,
-      numScroll: 1
-   },
-   {
-      breakpoint: '767px',
-      numVisible: 2,
-      numScroll: 1
-   },
-   {
-      breakpoint: '575px',
-      numVisible: 1,
-      numScroll: 1
-   }
-]);
 
 
 onMounted(() => {
@@ -65,31 +44,33 @@ onMounted(() => {
 </script>
 
 <template>
-   <div class="grid" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
-      <div class="grid p-fluid">
-         <div class="col-12">
-            <Toast />
-            <div>
-               <Carousel :value="modulos" :numVisible="3" :numScroll="3" :pt="{
-                  indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
-                  nextButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem;' },
-                  previousButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem; ' },
-               }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
+   <div  :style="{ fontFamily: 'Comic Sans MS, cursive' }">
 
-                  <template #item="slotProps">
-                     <div class="text-center py-5 px-3">
-                        <div class="mb-3">
-                           <img :src="slotProps.data.imagen" :alt="slotProps.data.nombre" class="imgRedonda"
-                              @click="redirecCategorias(slotProps.data.id)" />
-                        </div>
-                        <div>
-                           <h4 class="mb-1">{{ slotProps.data.nombre }}</h4>
-                        </div>
+      <div class="col-12">
+         <Toast />
+         <div  >
+            <Carousel :value="modulos" :numVisible="3" :numScroll="3" :pt="{
+               indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
+               nextButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem;' },
+               previousButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem; ' },
+            }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }"
+               >
+
+               <template #item="slotProps">
+                  <div class="carousel-container">
+                  
+                     <div class="mb-3">
+                        <img :src="slotProps.data.imagen" :alt="slotProps.data.nombre" class="imgRedonda"
+                           @click="redirecCategorias(slotProps.data.id)" />
                      </div>
-                  </template>
-               </Carousel>
-            </div>
+                     <div>
+                        <h4 class="mb-1">{{ slotProps.data.nombre }}</h4>
+                     </div>
+                  </div>
+               </template>
+            </Carousel>
          </div>
+
       </div>
 
    </div>
@@ -102,24 +83,26 @@ onMounted(() => {
    border: 10px solid #666;
 }
 
-.grid {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   grid-gap: 1rem;
+.imgRedonda:hover {
+   transform: scale(1.2);
+   /* Hace que la imagen se agrande a 1.2 veces su tamaño original cuando el ratón pasa por encima */
+   transition: transform 0.3s ease-in-out;
+   /* Añade una transición suave al cambio de tamaño */
+
+}.carousel-container {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   height: 100%;
+   width: 100%;
    padding: 1rem;
+   border-radius: 0.5rem;
+   cursor: pointer;
+   transition: all 0.3s ease-in-out;
 }
 
-.p-carousel .p-carousel-prev-icon,
-.p-carousel .p-carousel-next-icon {
-   color: #c92d2d;
-   /* Cambia el color de las flechas */
-   background-color: #000;
-   /* Cambia el color de fondo de las flechas */
-   border-radius: 50%;
-   /* Hace que las flechas sean redondas */
-   width: 30px;
-   /* Cambia el ancho de las flechas */
-   height: 30px;
-   /* Cambia la altura de las flechas */
-}
+
+
+
 </style>
