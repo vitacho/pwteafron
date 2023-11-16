@@ -173,8 +173,9 @@ const guardarCategoria = async () => {
             if (selectedCategoria.value.id) {
                 // Actualizar el módulo
                 // /api/v1/categorias/
+                formData.append('activo', selectedCategoria.value.activo);
                 const response = await axios.patch(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`, formData);
-
+                
                 // Actualiza selectedCategoria directamente con los datos de respuesta
                 selectedCategoria.value = response.data;
                 //recaragamos la tabla
@@ -182,6 +183,7 @@ const guardarCategoria = async () => {
 
 
             } else {
+                formData.append('activo', true);
                 const response = await axios.post(`${baseUrl}v1/categorias/`, formData);
                 if (response.status === 201) {
                     //recaragamos la tabla
@@ -281,7 +283,14 @@ const verActividades = (categoriaId) => {
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Modulos"
                     responsiveLayout="scroll">
                     <!-- Columnas de la tabla -->
-
+                    <Column field="estado" header="Estado" :sortable="true">
+                        <template #body="slotProps">
+                            <span class="p-column-title">Estado</span>
+                            <i class="pi" :class="{ 'text-green-500 pi-check-circle': slotProps.data.activo, 'text-pink-500 pi-times-circle': !slotProps.data.activo }"></i>
+                            <span class="text-green-500 ml-3 font-medium" v-if="slotProps.data.activo"> Activo </span>
+                            <span class="text-pink-500 ml-3 font-medium" v-else> Desactivado </span>
+                        </template>
+                    </Column>
                     <Column field="nombre" header="Nombre" :sortable="true">
                         <template #body="slotProps">
                             <span class="p-column-title">Nombre</span>
@@ -305,7 +314,7 @@ const verActividades = (categoriaId) => {
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
                                 @click="editarCategoria(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                            <Button  v-if="slotProps.data.activo"  icon="pi pi-trash" class="p-button-rounded p-button-warning"
                                 @click="eliminarCategoriaConfirmar(slotProps.data)" />
                         </template>
                     </Column>
@@ -339,6 +348,14 @@ const verActividades = (categoriaId) => {
                         <small class="p-error" v-if="v.descripcion.$error"> La Descripción tiene que tener por al menos 10
                             caracteres </small>
                     </div>
+                    <div class="field" v-if="nombreDialog == 'Editar Categoria'">
+                        <label for="descripcion">Estado</label>
+                        <div class="field-checkbox mb-0">
+                            <Checkbox v-model="selectedCategoria.activo" :binary="true" />
+                            <label for="checkOption1">Activo</label>
+                        </div>
+                    </div>
+
                     <div class="field">
                         <div class="field">
                             <FileUpload mode="basic" id="input-foto" name="imagen" accept="image/*" customUpload
@@ -351,7 +368,7 @@ const verActividades = (categoriaId) => {
                             <small class="p-error" v-if="v.imagen.$error"> Tienes que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedCategoria.imagen" :alt="selectedCategoria.nombre" width="150" class="w-auto"
+                            <Image :src="selectedCategoria.imagen" width="150" class="w-auto"
                                 preview />
                         </div>
                     </div>
@@ -365,7 +382,7 @@ const verActividades = (categoriaId) => {
                 </Dialog>
 
 
-                <Dialog v-model:visible="eliminarCategoriaDialog" :style="{ width: '450px' }" header="Confirmar"
+                <Dialog v-model:visible="eliminarCategoriaDialog" :style="{ width: '450px' }" header="Desactivar Categoria"
                     :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />

@@ -3,6 +3,11 @@ import { ref } from 'vue';
 export function getresponsiveOptins() {
     const responsiveOptions = ref([
         {
+            breakpoint: '5500px',
+            numVisible: 10,
+            numScroll: 1
+         },
+        {
             breakpoint: '4096px',
             numVisible: 8,
             numScroll: 1

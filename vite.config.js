@@ -9,7 +9,7 @@ export default defineConfig(() => {
     return {
         plugins: [vue()],
         server: {
-            port: 8000,
+            port: 4000,
         },
         resolve: {
             alias: {

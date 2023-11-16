@@ -109,7 +109,7 @@ const hideDialog = () => {
 
 const obtenerNombreCategoria = async () => {
     try {
-        //obtenemos el nombre de la ctaegoria en la cual esta el usuario
+        //obtenemos el nombre de la categoria en la cual esta el usuario
         const response = await axios.get(`${baseUrl}v1/categorias/${categoriaId.value}/`);
         if (response.status === 200) {
             categoria.value = response.data.nombre;
@@ -182,11 +182,14 @@ const guardarActividad = async () => {
             mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
         } else if (error.response) {
             mostrarError('Error', error.response.data);
+           
             mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
         } else {
             mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
             console.error('Error con la conexión a la API al actualizar el módulo:', error);
+            console.log(error);
         }
+        console.log(error);
         cargando.value = false;
     }
 };
@@ -282,7 +285,7 @@ const goBack = () => {
                             <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre + ' Pitograma'" class="shadow-2" width="100" preview />
                         </template>
                     </Column>
-                    <Column header="Estado">
+                    <Column header="Accion">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editarCategoria(slotProps.data)" />
                             <Button v-if="slotProps.data.activo" icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="eliminarActividadConfirmar(slotProps.data)" />
@@ -341,7 +344,7 @@ const goBack = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="eliminarActividadDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
+                <Dialog v-model:visible="eliminarActividadDialog" :style="{ width: '450px' }" header="Desactivar Actividad" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="selectedActividad">¿Estás seguro de desactivar la actividad?</span>
@@ -355,3 +358,4 @@ const goBack = () => {
         </div>
     </div>
 </template>
+

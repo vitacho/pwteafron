@@ -138,7 +138,7 @@ const router = createRouter({
                     component: () => import('@/views/pages/Crud.vue')
                 },
                 {
-                    path: '/pages/modulos',
+                    path: '/modulos',
                     name: 'crudmodulos',
                     component: () => import('@/views/pages/Modulos.vue')
                 },

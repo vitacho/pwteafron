@@ -81,6 +81,7 @@ onMounted(() => {
    height: 250px;
    border-radius: 150px;
    border: 10px solid #666;
+   cursor: pointer;
 }
 
 .imgRedonda:hover {
