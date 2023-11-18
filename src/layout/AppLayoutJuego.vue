@@ -5,15 +5,11 @@ import AppTopbar from './AppTopbarJuego.vue';
 //import AppSidebar from './AppSidebar.vue';
 //import AppConfig from './AppConfig.vue';
 import { useLayout } from '@/layout/composables/layout';
-
-
-
-
 </script>
 
 <template>
     
-    <div class="layout-wrapper" :style="{backgroundColor: 'EDF5FA'}" >
+    <div class="layout-wrapper" :style="{backgroundColor: '#c6f1ff'}" >
         <app-topbar></app-topbar>
         <div class="layout-main-container">
           

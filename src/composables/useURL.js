@@ -79,6 +79,8 @@ function setWeather(data) {
         weather.message = 'Las nevadas son intensas ahora.';
     } else if (weather.description === 'granizo') {
         weather.message = 'Está granizando en este momento.';
+    } else if (weather.description === 'tormenta con lluvia ligera') {
+        weather.message = 'El cielo esta haciendo ruido con gotas de agua.';
     } else if (weather.description === 'tormenta de nieve') {
         weather.message = 'Hay una tormenta de nieve en este momento.';
     } else if (weather.description === 'tormenta de arena') {

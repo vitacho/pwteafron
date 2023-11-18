@@ -4,13 +4,10 @@ import axios from 'axios';
 import { getBaseUrl } from '@/composables/useURL';
 import { getuseToast } from '@/composables/usarToast';
 import { getresponsiveOptins } from '@/composables/useJuegos';
-
 import { useRouter, useRoute } from 'vue-router';
-
 //variables 
 const baseUrl = getBaseUrl();
 const pictogramas = ref([]);
-
 const router = useRouter();
 const route = useRoute();
 const { responsiveOptions } = getresponsiveOptins();
@@ -18,10 +15,10 @@ const { mostrarError, mostrarExito } = getuseToast();// Aquí se almacena la lis
 const categoriaId = ref(route.params.categoriaId);
 const numItems = ref(0);
 const categorias = ref(null);
-const currentPictogram = ref(0);
 const pictogramseleccionado = ref('');
 const isLoading = ref(false);
 const pictogramaCopia = ref([]);
+const estadoVerificado = ref(false); // estado en el cual al entrar a verificar cuando esta inccrecto bloquea para que no entre seguidamente si no cuando se termine de ejecutar 
 
 
 const fetchActividades = async () => {
@@ -64,48 +61,80 @@ const shuffle = (array) => {
    return array;
 }
 
-//obtener aletoriamente un pictograma
+//Logica para obtener un pictograma aleatorio  
 const obtenerPictogramasAletorio = () => {
    try {
-      pictogramas.value = shuffle(pictogramas.value);
-      console.log("Pictogranas Copias ");
-      console.log(pictogramaCopia.value);
-      //metodo para obtener un pictograma aleatorio
-      const itemns = Math.floor(Math.random() * pictogramaCopia.value.length)
 
-      console.log('Valor aletorio que se calculo ' + itemns);
-      console.log('Pictogram selecionado de copia ' + pictogramaCopia.value[itemns].nombre)
-      //obtenemos el pìctograma seleccionado segun el número aleatorio de la lista de pictogramaCopia
-      console.log(pictogramaCopia.value[itemns]);
-      pictogramseleccionado.value = pictogramaCopia.value[itemns];
-      //filtramos el pictograma seleccionado de la lista de pictogramaCopia y lo eliminamos
-      pictogramaCopia.value = pictogramaCopia.value.filter(pictograma => pictograma.id !== pictogramseleccionado.value.id);
-      console.log("Tamaño de la lista de pictogramas copia " + pictogramaCopia.value.length);
-      console.log("Tamaño de la lista de pictogramas " + pictogramas.value.length);
-      console.log(pictogramseleccionado.value.nombre);
-      console.log(pictogramaCopia.value.length);
-      //verificamos si ya no queda mas pictogramas en la lista de pictogramaCopia
-      if (0=== pictogramaCopia.value.length) {
+      if (0 === pictogramaCopia.value.length) {
+         //verificamos si ya no queda mas pictogramas en la lista de pictogramaCopia y mostramos un mensaje
          console.log("No hay mas pictogramas en la lista de pictogramaCopia");
          mostrarExito('Correcto', 'Has seleccionado todos los pictogramas correctamente');
-         pictogramseleccionado.value = '';
+         pictogramseleccionado.value = [];
+         pictogramaCopia.value = [];
+         const numero = Math.floor(Math.random() * 4) + 1;
+         //reproducimos un sonido de un archivo mp3public/layout/audio/IntentaloDeNuevo
+         const audio = new Audio(`layout/audio/Correcto/felicitaciones${numero}.mp3`);
+         
+         audio.play();
+         // calculamos unos 10 segundos para que vuelva otra vez a la pagina de categorias
+         setTimeout(() => VolverCategorias(), 10000);
+      } else {
+         pictogramas.value = shuffle(pictogramas.value);
+         console.log("Pictogranas Copias ");
+         console.log(pictogramaCopia.value);
+         //metodo para obtener un pictograma aleatorio
+         const itemns = Math.floor(Math.random() * pictogramaCopia.value.length)
 
+         console.log('Valor aletorio que se calculo ' + itemns);
+         console.log('Pictogram selecionado de copia ' + pictogramaCopia.value[itemns].nombre)
+         //obtenemos el pìctograma seleccionado segun el número aleatorio de la lista de pictogramaCopia
+         console.log('tamaño del la objecto de pictograma Copia ' + pictogramaCopia.value[itemns]);
+         pictogramseleccionado.value = pictogramaCopia.value[itemns];
+
+         console.log("Tamaño de la lista de pictogramas copia " + pictogramaCopia.value.length);
+         console.log("Tamaño de la lista de pictogramas " + pictogramas.value.length);
+         console.log(pictogramseleccionado.value.nombre);
+         console.log(pictogramaCopia.value.length);
       }
    } catch (error) {
       console.log(error);
    }
-
-
 };
 
-const verificarPictogramaSelecionado = (id) => {
-   if (id === pictogramseleccionado.value.id) {
+const verificarPictogramaSelecionado = async (id) => {
+   //Se controla si el pictograma es corecto y ademas que el tamaño de pictogras copias sea difreente de 0 para 
+   if (id === pictogramseleccionado.value.id && pictogramaCopia.value.length != 0) {
       mostrarExito('Correcto', 'Has seleccionado la imagen correcta');
-      //eliminar el pictograma que se haya sellecionado de la copia 
+      //filtramos el pictograma seleccionado de la lista de pictogramaCopia y lo eliminamos
+      pictogramaCopia.value = pictogramaCopia.value.filter(pictograma => pictograma.id !== pictogramseleccionado.value.id);
+      //obtenesmos el siguiente pictograma aleatorio 
+      estadoVerificado.value = false;
+      const numero = Math.floor(Math.random() * 6) + 1;
+      //reproducimos un sonido de un archivo mp3 public/public/layout/audio/Correcto/SeleccionCorrecta
+      const audio = new Audio(`layout/audio/Correcto/SeleccionCorrecta/seleccion${numero}.mp3`);
+      audio.play();
+      await sleep(1000);
       obtenerPictogramasAletorio();
-   } else {
+   } else if (pictogramaCopia.value.length !== 0 && estadoVerificado.value === false) {
+      estadoVerificado.value = true;
+
+      //se controla para que no entre a la logiuca cuando este incorrecta de error cuando este vacia la lista de pictogramaCopia
       mostrarError('Incorrecto', 'Has seleccionado la imagen incorrecta');
+      //de un numero aletorio de 1 al 4 para reproducir un sonido de error de 4 opciones
+      const numero = Math.floor(Math.random() * 4) + 1;
+      //reproducimos un sonido de un archivo mp3public/layout/audio/IntentaloDeNuevo
+      const audio = new Audio(`layout/audio/IntentaloDeNuevo/denuevo${numero}.mp3`);
+      audio.play();
+      //esperamos 3 segundos para que vuelva a comprobar si no es correcto 
+      await sleep(1000);
+      estadoVerificado.value = false;
+
+
+
    }
+};
+const sleep = (ms) => {
+   return new Promise(resolve => setTimeout(resolve, ms));
 };
 const fetchCategorias = async () => {
 
@@ -123,9 +152,6 @@ const fetchCategorias = async () => {
 
       console.log('La categoria no existe');
       router.replace({ name: '404' });
-
-
-
    }
 };
 
@@ -135,12 +161,31 @@ const VolverCategorias = () => {
 
 };
 
+//Caluclo de numero aletorios
 
+
+const randon = () => {
+   return Math.floor(Math.random() * 1);
+};
+
+//control del carrosel mediante el teclado
+const handleKeydown = (event) => {
+   // código para manejar teclas izquierda, derecha, intro, etc    
+   if (event.key === 'ArrowRight') {
+      // Mueve el carrusel al siguiente elemento
+      console.log("Tecla derecha");
+   } else if (event.key === 'ArrowLeft') {
+      // Mueve el carrusel al elemento anterior
+      console.log("Tecla izquierda");
+   }
+};
 
 onMounted(async () => {
    await fetchActividades();
    await fetchCategorias();
    //await BuscarCatagorias();
+   //window.removeEventListener('keydown', this.handleKeydown);
+
 });
 
 </script>
@@ -158,29 +203,42 @@ onMounted(async () => {
             </div>
             <div v-else>
                <div>
-                  <h3 class="text-center">
-                     Seleciona la imagen que corresponde a la palabra {{ pictogramseleccionado.nombre }}
-                  </h3>
-                  <Carousel :value="pictogramas" :numVisible="3" :numScroll="3" :pt="{
-                     indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
-                     nextButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem;' },
-                     previousButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem; ' },
-                  }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
-
-                     <template #item="slotProps">
-                        <div class="carousel-container">
-                           <div class="mb-3">
-                              <img :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre"
-                                 class="imgRectangulo" @click="verificarPictogramaSelecionado(slotProps.data.id)" />
-
-                           </div>
-                           <div>
-                              <h4 class="mb-1">{{ slotProps.data.nombre }}</h4>
-                           </div>
+                  <div v-if="pictogramaCopia.length != 0">
+                     <div class="flex flex-wrap justify-content-center">
+                        <h2 class="flex align-items-center justify-content-center">
+                           Seleciona la imagen que corresponde a la palabra &nbsp <b> {{ pictogramseleccionado.nombre }}
+                           </b>
+                        </h2>
+                        <div class="flex align-items-center justify-content-center bg-primary font-bold m-2 border-round">
+                           <img class="imagen-seleccionada" :src="pictogramseleccionado.imagen_pictograma"
+                              :alt="pictogramseleccionado.nombre">
                         </div>
-                     </template>
-                  </Carousel>
+                     </div>
+                     <Carousel aria-label="Carrusel de pictogramas" :value="pictogramas" :numVisible="3" :numScroll="3"
+                        :pt="{
+                           indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
+                           nextButtonIcon: { style: 'height: 100px; width: 100px;' },
+                           previousButtonIcon: { style: 'height: 100px; width: 100px' },
+                        }" :responsiveOptions="responsiveOptions"
+                        :nextButtonProps="{ style: '  height: 75px; width: 75px;' }" :prevButtonProps="{
+                           style: ' height: 75px; width: 75px;'
+                        }" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
 
+                        <template #item="slotProps">
+
+                           <div class="carousel-container">
+                              <div class="mb-3">
+                                 <img :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre"
+                                    class="imgRectangulo" @click="verificarPictogramaSelecionado(slotProps.data.id)" st />
+
+                              </div>
+                              <div>
+                                 <h4 class="mb-1">{{ slotProps.data.nombre }}</h4>
+                              </div>
+                           </div>
+                        </template>
+                     </Carousel>
+                     
                   <div class=" flex justify-content-center">
                      <a outlined class=" transparent-button " name="volver" @click="VolverCategorias">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="60" height="60" fill="none">
@@ -196,6 +254,47 @@ onMounted(async () => {
                         </svg>
                      </a>
                   </div>
+
+                  </div>
+                  <div v-else>
+                     <!-- Cuando se completa la actividad -->
+                     <div class="globos  flex align-items-center">
+
+                        <img class="globo" :style="{ 'animation-duration': '5s', 'animation-delay': 0 + 's', left: '10%' }"
+                           src="layout/images/globos/2.svg" alt="Globo 1">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '6s', 'animation-delay': randon() + 's', left: '20%' }"
+                           src="layout/images/globos/3.svg" alt="Globo 2">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '7s', 'animation-delay': randon() + 's', left: '30%' }"
+                           src="layout/images/globos/4.svg" alt="Globo 3">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '6s', 'animation-delay': randon() + 's', left: ' 40%' }"
+                           src="layout/images/globos/5.svg" alt="Globo 4">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '8s', 'animation-delay': randon() + 's', left: '50%' }"
+                           src="layout/images/globos/2.svg" alt="Globo 5">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '4s', 'animation-delay': randon() + 's', left: '60%' }"
+                           src="layout/images/globos/3.svg" alt="Globo 6">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '7s', 'animation-delay': randon() + 's', left: '70%' }"
+                           src="layout/images/globos/4.svg" alt="Globo 7">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '4s', 'animation-delay': randon() + 's', left: ' 80%' }"
+                           src="layout/images/globos/5.svg" alt="Globo 8">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '5s', 'animation-delay': randon() + 's', left: ' 90%' }"
+                           src="layout/images/globos/6.svg" alt="Globo 9">
+                        <img class="globo"
+                           :style="{ 'animation-duration': '8s', 'animation-delay': randon() + 's', left: ' 0%' }"
+                           src="layout/images/globos/6.svg" alt="Globo 9">
+
+                     </div>
+
+                  </div>
+
+
                </div>
             </div>
 
@@ -236,10 +335,10 @@ onMounted(async () => {
 }
 
 .imgRectangulo {
-   width: 250px;
+   width: auto;
    height: auto;
-
-   border: 10px solid #666;
+   max-width: 160px;
+   border: 5px solid #666;
    cursor: pointer;
 }
 
@@ -298,6 +397,48 @@ onMounted(async () => {
 
    100% {
       transform: rotate(360deg);
+   }
+}
+
+
+.imagen-seleccionada {
+   max-width: 75px;
+   max-height: auto;
+   border: #666 5px solid;
+   border-radius: 10px;
+   margin: auto;
+   position: relative;
+}
+
+.imagen-seleccionada:hover {
+   max-width: 100px;
+   max-height: auto;
+   transition: max-width 0.3s ease, max-height 0.3s ease;
+   z-index: 1;
+}
+
+
+.globos {
+   position: relative;
+   height: 100vh;
+   overflow: hidden;
+
+}
+
+.globo {
+   position: absolute;
+   bottom: 0;
+   animation: subir infinite ease-in-out;
+   width: 250px;
+}
+
+@keyframes subir {
+   0% {
+      bottom: 0;
+   }
+
+   100% {
+      bottom: 100vh;
    }
 }
 </style>

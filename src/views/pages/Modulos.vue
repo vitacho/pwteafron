@@ -4,9 +4,9 @@ import axios from 'axios';
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
 
-import { useVuelidate } from '@vuelidate/core'
-import { required, minLength } from '@vuelidate/validators'
-import {getuseToast} from '@/composables/usarToast';
+import { useVuelidate } from '@vuelidate/core';
+import { required, minLength } from '@vuelidate/validators';
+import { getuseToast } from '@/composables/usarToast';
 
 const modulos = ref([]); // Aquí se almacena la lista de módulos
 const selectedModule = ref(null); // Aquí se almacena el módulo seleccionado para edición
@@ -19,16 +19,14 @@ const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 
 const rules = {
     nombre: { required, minLength: minLength(3) }, // Mínimo de 3 caracteres
-    descripcion: { required, minLength: minLength(10) },// Mínimo de 10 caracteres
+    descripcion: { required, minLength: minLength(10) } // Mínimo de 10 caracteres
 
     // Agrega las reglas para otros campos aquí
 };
 
 const v = useVuelidate(rules, selectedModule);
 
-
 onMounted(() => {
-    
     fetchModulos(); //llamamos a la funcion para traer los modulos
 });
 
@@ -58,7 +56,7 @@ const hideDialog = () => {
 //metodo para guardar el modulo
 const guardarModulo = async () => {
     cargando.value = true;
-    console.log('1223334')
+    console.log('1223334');
 
     console.log('Módulo a guardar:', selectedModule.value);
     // Validar el formulario con Vuelidate
@@ -69,10 +67,9 @@ const guardarModulo = async () => {
         // Mostrar errores de validación si existen
         mostrarError('Error', 'Por favor, verifica los datos ingresados.');
         cargando.value = false;
-        console.log(cargando.value)
+        console.log(cargando.value);
     } else {
         try {
-
             const formData = new FormData();
             formData.append('nombre', selectedModule.value.nombre);
             formData.append('descripcion', selectedModule.value.descripcion);
@@ -85,7 +82,6 @@ const guardarModulo = async () => {
                 formData.append('imagen', base64Blob, `${selectedModule.value.nombre}.${type}`);
             }
 
-
             const response = await axios.patch(`${baseUrl}v1/modulos/${selectedModule.value.id}/`, formData);
             if (response.status === 200) {
                 // Actualiza selectedModule directamente con los datos de respuesta
@@ -97,9 +93,7 @@ const guardarModulo = async () => {
                 cargando.value = false;
                 base64File.value = null; // Limpia la imagen seleccionada
             }
-
         } catch (error) {
-
             if (error.code === 'ECONNABORTED') {
                 mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
             } else if (error.response) {
@@ -110,10 +104,8 @@ const guardarModulo = async () => {
                 console.error('Error con la conexión a la API al actualizar el módulo:', error);
             }
             cargando.value = false;
-
         }
     }
-
 };
 
 //funcion para recaragar la tabla cuando hay cambios en la base de datos al momento de guaradra en el modulo
@@ -122,12 +114,10 @@ const recaragarTabla = async () => {
         const response = await axios.get(`${baseUrl}v1/modulos/`);
         modulos.value = response.data;
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error ', detail: 'Se produjo un error al intentar obtener los datos. Por favor, verifica tu conexión a Internet. Si el problema persiste, comunícate con el soporte técnico', life: 3000 });
+        mostrarError('Error ', 'Se produjo un error al intentar obtener los datos. Por favor, verifica tu conexión a Internet.');
     }
 };
 //funcion para mostrar los mensajes de error
-
-
 
 const customBase64Uploader = async (event) => {
     const file = event.files[0];
@@ -143,8 +133,6 @@ const customBase64Uploader = async (event) => {
     };
     mostrarInfo('', 'La imagen se ha cargado correctamente');
 };
-
-
 </script>
 
 <template>
@@ -191,9 +179,7 @@ const customBase64Uploader = async (event) => {
                             <Button icon="pi pi-eye" class="p-button-rounded p-button-info mt-2"
                                 @click="$router.push({ name: 'Categorias', params: { moduloId: slotProps.data.id } })" />
                         </template>
-
                     </Column>
-
                 </DataTable>
 
                 <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" header="Editar Módulo" :modal="true"
@@ -232,8 +218,7 @@ const customBase64Uploader = async (event) => {
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
                         <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text"
-                            @click="guardarModulo">
-                        </Button>
+                            @click="guardarModulo"> </Button>
                     </template>
                 </Dialog>
             </div>
