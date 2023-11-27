@@ -113,8 +113,9 @@ const verificarPictogramaSelecionado = async (id) => {
       //reproducimos un sonido de un archivo mp3 public/public/layout/audio/Correcto/SeleccionCorrecta
       const audio = new Audio(`layout/audio/Correcto/SeleccionCorrecta/seleccion${numero}.mp3`);
       audio.play();
-      await sleep(1000);
       obtenerPictogramasAletorio();
+      await sleep(1000);
+      
    } else if (pictogramaCopia.value.length !== 0 && estadoVerificado.value === false) {
       estadoVerificado.value = true;
 

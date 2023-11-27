@@ -17,3 +17,4 @@ export function getBase64Type(base64data) {
     }
     return 'png';
 }
+

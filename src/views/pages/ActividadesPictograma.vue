@@ -285,7 +285,7 @@ const goBack = () => {
                             <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre + ' Pitograma'" class="shadow-2" width="100" preview />
                         </template>
                     </Column>
-                    <Column header="Accion">
+                    <Column header="Acción">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editarCategoria(slotProps.data)" />
                             <Button v-if="slotProps.data.activo" icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="eliminarActividadConfirmar(slotProps.data)" />

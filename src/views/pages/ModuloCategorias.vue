@@ -245,16 +245,20 @@ const verActividades = (categoriaId) => {
     console.log('ver actividades');
     console.log('Categoria Id'+categoriaId);
     console.log('Tipo de actividad '+ tipo.value);
-    //llamamos a la funcion que redirecciona a la vista de actividades segun el tipo de actividad que sea
+    //llamamos a la funcion que redirecciona a la vista de actividades segun el tipo de actividad que segun el tipoque tenga el modulo
     if (tipo.value=== 'PIC' ) {
         console.log('Se entra al tipo pictograma');
         router.push({ name: 'ActividadesCrudPictograma', params: { categoriaId: categoriaId } });
-    } else if (tipo.value === "DIB") {
-        router.push({ name: 'NombreComponenteTipo2', params: { categoriaId: categoriaId } });
+    } else if (tipo.value === "ORD") {
+        console.log('Entramo a la actividad de ordemanieto de oraciones con imagenes');
+       // router.push({ name: 'NombreComponenteTipo2', params: { categoriaId: categoriaId } });
+        router.push({ name: 'ActividadesOrdenarOraciones', params: { categoriaId: categoriaId } });
     } else if (tipo.value === 3 ) {
         router.push({ name: 'NombreComponenteTipo3', params: { categoriaId: categoriaId } });
-    }
+    }else if (tipo.value === 4 ) {
+        router.push({ name: 'NombreComponenteTipo4', params: { categoriaId: categoriaId } });
     // Agrega más condiciones según los tipos de actividad que tengas
+    }
 };
 </script>
 
