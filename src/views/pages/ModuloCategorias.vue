@@ -99,7 +99,7 @@ const eliminarCategoria = async () => {
         const response = await axios.patch(`${baseUrl}v1/categorias/${selectedCategoria.value.id}/`, fromData);
         if (response.status === 200) {
             //recaragamos la tabla
-            mostrarExito('Éxito', 'La categoria se ha eliminado correctamente');
+            mostrarExito('Éxito', 'La categoria se ha desactivado correctamente');
             fetchCategorias();
             eliminarCategoriaDialog.value = false;
             selectedCategoria.value = {};
@@ -153,8 +153,8 @@ const guardarCategoria = async () => {
             cargando.value = false;
         } else {
             const formData = new FormData();
-            formData.append('nombre', selectedCategoria.value.nombre);
-            formData.append('descripcion', selectedCategoria.value.descripcion);
+            formData.append('nombre', selectedCategoria.value.nombre.replace(/\s+/g, ' ').trim());
+            formData.append('descripcion', (selectedCategoria.value.descripcion|| '').replace(/\s+/g, ' ').trim());
             formData.append('modulo', moduloId.value);
             //cuando hay una imagen seleccionada
 

@@ -53,7 +53,11 @@ onMounted(() => {
                indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
                nextButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem;' },
                previousButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem; ' },
-            }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }"
+            }"
+               :nextButtonProps="{ style: '  height: 75px; width: 75px; color: #000000' }" :prevButtonProps="{
+                  style: ' height: 75px; width: 75px; color: #000000'
+              }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }"
+               circular :d_circucircular="true"
                >
 
                <template #item="slotProps">

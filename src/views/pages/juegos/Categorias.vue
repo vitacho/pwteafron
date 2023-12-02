@@ -57,8 +57,8 @@ const redirecActividades = (categoriaId) => {
     if (tipo.value === 'PIC') {
         console.log('Se entra al tipo pictograma');
         router.push({ name: 'ActividaPictogramaJuegos', params: { categoriaId: categoriaId } });
-    } else if (tipo.value === 'DIB') {
-        router.push({ name: 'NombreComponenteTipo2', params: { categoriaId: categoriaId } });
+    } else if (tipo.value === 'ORD') {
+        router.push({ name: 'ActividadOrdenarOracionesJuegos', params: { categoriaId: categoriaId } });
     } else if (tipo.value === 3) {
         router.push({ name: 'NombreComponenteTipo3', params: { categoriaId: categoriaId } });
     }
@@ -80,11 +80,14 @@ onMounted(async () => {
         <div class="col-12">
             <Toast />
             <div>
-                <Carousel :value="categorias" :numVisible="3" :numScroll="3" :pt="{
+                <Carousel :value="categorias" :circular="true" :numVisible="3" :numScroll="3" :pt="{
                     indicatorButton: { class: 'border-round-lg', style: 'height: 25px' },
-                    nextButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem;' },
-                    previousButtonIcon: { style: 'height: 100px; width: 100px; font-size: 2rem; ' }
-                }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
+                    nextButtonIcon: { style: 'height: 100px; width: 100px;' },
+                    previousButtonIcon: { style: 'height: 100px; width: 100px' },
+                }" circular :d_circucircular="true"
+                    :nextButtonProps="{ style: '  height: 75px; width: 75px; color: #000000' }" :prevButtonProps="{
+                        style: ' height: 75px; width: 75px; color: #000000'
+                    }" :responsiveOptions="responsiveOptions" :style="{ fontFamily: 'Comic Sans MS, cursive' }">
                     <template #item="slotProps">
                         <div class="carousel-container">
                             <div class="mb-3">

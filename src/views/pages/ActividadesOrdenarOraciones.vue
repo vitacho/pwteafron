@@ -45,10 +45,8 @@ const loading = ref(true);
 
 // Validación de formulario con Vuelidate
 const rules = {
-    nombre: { required }, // Mínimo de 3 caracteres
-    descripcion: {}, // Mínimo de 10 caracteres
-    imagen_ordenar: { required },    //imagen de la actividad
-    oracion: { required }, //oracion de la actividad
+    nombre: { required }, // Mínimo de 3 caracteres// Mínimo de 10 caracteres
+        oracion: { required }, //oracion de la actividad
     //oracion de la actividad
 
 };
@@ -69,7 +67,7 @@ onMounted(async () => {
 const fetchActividades = async () => {
     try {
         loading.value = true;
-        const response = await axios.get(`${baseUrl}v1/actividades_ordenar_oracion/?categoria=${categoriaId.value}`)
+        const response = await axios.get(`${baseUrl}v1/actividades/ordenar-oracion/categorias/${categoriaId.value}/`)
         console.log(response);
         if (response.status === 200) {
             categorias.value = response.data;
@@ -110,22 +108,23 @@ const eliminarActividadConfirmar = (actividad) => {
 const eliminarActividad = async () => {
     console.log('eliminar');
     try {
-        //obtenemos el id de la actividad a eliminar
         const fromData = new FormData();
         fromData.append('id', selectedActividad.value.id);
+        fromData.append('nombre', selectedActividad.value.nombre);
+        fromData.append('categoria', selectedActividad.value.categoria);
         fromData.append('activo', false);
         //se cambia el estado de la actividad a false para que no se muestre en la lista de actividades pictogramas
         const response = await axios.patch(`${baseUrl}v1/actividades_ordenar_oracion/${selectedActividad.value.id}/`, fromData);
         if (response.status === 200) {
             //recaragamos la tabla
-            mostrarExito('Éxito', 'La actividad se ha desactivado correctamente');
+            mostrarExito('Éxito', 'La categoria se ha desactivado correctamente');
             fetchActividades();
             eliminarActividadDialog.value = false;
             selectedActividad.value = {};
         }
     } catch (error) {
         mostrarError('Error', 'Hubo un error al desactivar la actividad');
-        mostrarError('Error', error);
+        mostrarError('Error', error.response.data);
     }
 };
 
@@ -207,21 +206,13 @@ const guardarActividad = async () => {
         } else {
             let response = await axios;
             const formData = new FormData();
-            formData.append('nombre', selectedActividad.value.nombre);
-            formData.append('descripcion', selectedActividad.value.descripcion);
-            formData.append('oracion', selectedActividad.value.oracion);
+            //eliminamos los dobles espacios de los campos de texto
+            selectedActividad.value.nombre = selectedActividad.value.nombre.replace(/\s+/g, ' ').trim();
+            formData.append('nombre', selectedActividad.value.nombre.replace(/\s+/g, ' ').trim());
+            formData.append('descripcion', (selectedActividad.value.descripcion || '').replace(/\s+/g, ' ').trim());
+            formData.append('oracion', selectedActividad.value.oracion.replace(/\s+/g, ' ').trim());
             formData.append('categoria', categoriaId.value);
 
-            //cuando hay una imagen seleccionada
-            if (base64File.value) {
-                //obtener el tipo de imagen de la imagen seleccionada
-                const type = getBase64Type(base64File.value);
-                //convertir la imagen seleccionada en un blob
-                const base64Blob = base64ToBlob(base64File.value, '.' + type);
-                //obtener el nombre de la imagen
-                //agregar la imagen al formData con el nombre de imagen
-                formData.append('imagen_ordenar', base64Blob, `${selectedActividad.value.nombre}.${type}`);
-            }
 
             console.log('Actividad a guardar: ', selectedActividad.value.id);
 
@@ -299,7 +290,7 @@ const guardarImagen = async () => {
                 ImagenDialog.value = false;
                 actulizarPalabrasTabla();
                 selectedPalabra.value = {};
-               
+
 
             }
             cargando.value = false;
@@ -333,7 +324,7 @@ const Continuar = () => {
             //obtenemos el id de la palabra
             console.log("Id de la palabras = " + palabras_lista.value[i].id);
             if (palabras_lista.value[i].imagen) {
-                cont=cont+1;
+                cont = cont + 1;
                 console.log("Contador = " + cont);
             }
         };
@@ -342,8 +333,8 @@ const Continuar = () => {
         //si el cont es igual al tamaño de lista cerramos el dialogo
         if (cont === palabras_lista.value.length) {
             listaPalabrasDialog.value = false;
-           
-        }else {
+
+        } else {
             mostrarError('Error', 'Todas las palabras deben de tener imagen');
         }
     }
@@ -429,13 +420,6 @@ const goBack = () => {
                         </template>
                     </Column>
 
-                    <Column header="Imagen de la Actividad ">
-                        <template #body="slotProps">
-                            <span class="p-column-title">Imagen de la Actividad </span>
-                            <Image :src="slotProps.data.imagen_ordenar" :alt="slotProps.data.nombre + ' Pitograma'"
-                                class="shadow-2" width="100" preview />
-                        </template>
-                    </Column>
                     <Column header="Acción">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
@@ -445,7 +429,7 @@ const goBack = () => {
                                 @click="eliminarActividadConfirmar(slotProps.data)" />
                         </template>
                     </Column>
-                  
+
                 </DataTable>
 
                 <Dialog v-model:visible="actividadDialog" :style="{ width: '700px' }" :header="nombreDialog" :modal="true"
@@ -483,26 +467,12 @@ const goBack = () => {
                             <div class="formgrid grid">
                                 <div class="field col">
                                     <label for="descripcion">Descripción</label>
-                                    <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true"
-                                        rows="3" cols="20" :class="{ 'p-invalid': validarOracion.descripcion.$error }"
+                                    <Textarea id="descripcion" v-model="selectedActividad.descripcion" rows="3" cols="20"
                                         placeholder="Escribe la descripción de la categoria aquí (Opcional)" />
                                 </div>
 
                             </div>
                             <div class="formgrid grid">
-                                <div class="field  col">
-                                    <FileUpload mode="basic" id="input-foto" name="imagen" accept="image/*" customUpload
-                                        @uploader="customBase64Uploader" chooseLabel="Subir imagen"
-                                        invalidFileSizeMessage="El tamaño máximo de la imagen permitido es 5MB"
-                                        invalidFileLimitMessage="Solo se admite un archivo a la vez"
-                                        invalidFileTypeMessage="Solo se admite formato de imagen PNG, JPG, JPEG"
-                                        :maxFileSize="5000000" :showUploadButton="false" :showCancelButton="false"
-                                        :auto="true">
-                                    </FileUpload>
-                                    <small class="p-error" v-if="validarOracion.imagen_ordenar.$error"> Se tiene que subir
-                                        una imagen
-                                    </small>
-                                </div>
                                 <div class="field col field-checkbox "
                                     v-if="nombreDialog == 'Editar Actividad Ordenar Oraciones'">
                                     <Checkbox v-model="selectedActividad.activo" :binary="true" />
@@ -510,11 +480,6 @@ const goBack = () => {
                                 </div>
                             </div>
 
-                        </div>
-                        <div class="field col-4">
-                            <div class="flex align-items-center justify-content-center">
-                                <Image :src="selectedActividad.imagen_ordenar" width="150" class="w-auto" preview />
-                            </div>
                         </div>
 
                     </div>
@@ -543,39 +508,40 @@ const goBack = () => {
                 <Dialog v-model:visible="listaPalabrasDialog" :style="{ width: '700px' }" header="Palabras creadas"
                     :modal="true" class="p-fluid">
 
-                        <small class="p-error">*Se debe de agregar imagenes a las palabras que se crearon *</small>
+                    <small class="p-error">*Se debe de agregar una imagen a cada una de las palabras que se hayan creado
+                        *</small>
 
-                        <DataTable ref="dt" :value="palabras_lista" v-model:selection="selectedPalabra" dataKey="id"
-                            :paginator="true" :rows="5"
-                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            :rowsPerPageOptions="[5, 10, 25]"
-                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Palabras"
-                            responsiveLayout="scroll" class="p-datatable-sm">
+                    <DataTable ref="dt" :value="palabras_lista" v-model:selection="selectedPalabra" dataKey="id"
+                        :paginator="true" :rows="5"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        :rowsPerPageOptions="[5, 10, 25]"
+                        currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Palabras"
+                        responsiveLayout="scroll" class="p-datatable-sm">
 
-                            <Column field="verified" header="Imagen Cargada" dataType="boolean" style="width: 125px">
-                                <template #body="slotProps">
-                                    <i class="pi"
-                                        :class="{ 'pi-check-circle text-green-500': slotProps.data.imagen, 'pi-times-circle text-red-400': !slotProps.data.imagen }, 'flex align-items-center justify-content-center'">
-                                    </i>
-                                </template>
-                            </Column>
-                            <Column field="nombre" header="Texto" :sortable="true">
-                                <template #body="slotProps">
-                                    <span class="p-column-title">Texto</span>
-                                    {{ slotProps.data.texto }}
-                                </template>
-                            </Column>
-                            <Column header="Imagen" style="width: 100px">
-                                <template #body="slotProps">
+                        <Column field="verified" header="Imagen Cargada" dataType="boolean" style="width: 125px">
+                            <template #body="slotProps">
+                                <i class="pi"
+                                    :class="{ 'pi-check-circle text-green-500': slotProps.data.imagen, 'pi-times-circle text-red-400': !slotProps.data.imagen }, 'flex align-items-center justify-content-center'">
+                                </i>
+                            </template>
+                        </Column>
+                        <Column field="nombre" header="Texto" :sortable="true">
+                            <template #body="slotProps">
+                                <span class="p-column-title">Texto</span>
+                                {{ slotProps.data.texto }}
+                            </template>
+                        </Column>
+                        <Column header="Agregar Imagen" style="width: 100px">
+                            <template #body="slotProps">
 
-                                    <div class="flex align-items-center justify-content-center">
-                                        <Button icon="pi pi-plus" class="p-button-rounded p-button-warning"
-                                            @click="agregarImagen(slotProps.data)" />
-                                    </div>
-                                </template>
-                            </Column>
-                        </DataTable>
-                    
+                                <div class="flex align-items-center justify-content-center">
+                                    <Button icon="pi pi-plus" class="p-button-rounded p-button-warning"
+                                        @click="agregarImagen(slotProps.data)" />
+                                </div>
+                            </template>
+                        </Column>
+                    </DataTable>
+
                     <template #footer>
                         <Button label="Continuar" icon="pi pi-check" class="p-button-text" @click="Continuar" />
                     </template>

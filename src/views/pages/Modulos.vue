@@ -71,8 +71,8 @@ const guardarModulo = async () => {
     } else {
         try {
             const formData = new FormData();
-            formData.append('nombre', selectedModule.value.nombre);
-            formData.append('descripcion', selectedModule.value.descripcion);
+            formData.append('nombre', selectedModule.value.nombre.replace(/\s+/g, ' ').trim());
+            formData.append('descripcion', (selectedModule.value.descripcion|| '').replace(/\s+/g, ' ').trim());
             //cuando hay una imagen seleccionada
             if (base64File.value) {
                 //obtener el tipo de iamgen de la imagen seleccionada

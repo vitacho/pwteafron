@@ -92,6 +92,7 @@ const eliminarActividad = async () => {
             eliminarActividadDialog.value = false;
             selectedActividad.value = {};
         }
+
     } catch (error) {
         mostrarError('Error', 'Hubo un error al desactivar la actividad');
         mostrarError('Error', error);
@@ -135,10 +136,10 @@ const guardarActividad = async () => {
             mostrarError('Error', 'Por favor, verifica los datos ingresados.');
             cargando.value = false;
         } else {
-            
+
             const formData = new FormData();
-            formData.append('nombre', selectedActividad.value.nombre);
-            formData.append('descripcion', selectedActividad.value.descripcion);
+            formData.append('nombre', selectedActividad.value.nombre.replace(/\s+/g, ' ').trim());
+            formData.append('descripcion', (selectedActividad.value.descripcion || '').replace(/\s+/g, ' ').trim());
             formData.append('categoria', categoriaId.value);
             //cuando hay una imagen seleccionada
 
@@ -158,13 +159,13 @@ const guardarActividad = async () => {
             if (selectedActividad.value.id) {
                 console.log('Se ingresa al if de id');
                 //obetenemos el estado activo de la actividad
-                formData.append('activo', selectedActividad.value.activo);            
+                formData.append('activo', selectedActividad.value.activo);
                 // Actualizar la actividad
                 // /api/v1/actividades/
                 await axios.patch(`${baseUrl}v1/actividades_pictograma/${selectedActividad.value.id}/`, formData);
                 mostrarExito('Éxito', 'El módulo se ha actualizado correctamente');
             } else {
-                
+
                 formData.append('activo', true);
                 const response = await axios.post(`${baseUrl}v1/actividades_pictograma/`, formData);
                 if (response.status === 201) {
@@ -182,7 +183,7 @@ const guardarActividad = async () => {
             mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
         } else if (error.response) {
             mostrarError('Error', error.response.data);
-           
+
             mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
         } else {
             mostrarError('Error', 'Ha ocurrido un error al guardar la información.');
@@ -231,26 +232,20 @@ const goBack = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block" @click="goBack" />
-                            <Button label="Nueva Actividad" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                            <Button label="Volver" icon="pi pi-arrow-left" class="p-button-secondary mr-2 inline-block"
+                                @click="goBack" />
+                            <Button label="Nueva Actividad" icon="pi pi-plus" class="p-button-success mr-2"
+                                @click="openNew" />
                         </div>
                     </template>
                 </Toolbar>
 
-                <DataTable
-                    v-if="categorias.length > 0"
-                    ref="dt"
-                    :value="categorias"
-                    v-model:selection="selectedActividad"
-                    dataKey="id"
-                    :paginator="true"
-                    :rows="5"
-                    tableStyle="flex justify-content-between"
+                <DataTable v-if="categorias.length > 0" ref="dt" :value="categorias" v-model:selection="selectedActividad"
+                    dataKey="id" :paginator="true" :rows="5" tableStyle="flex justify-content-between"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Modulos"
-                    responsiveLayout="scroll"
-                >
+                    responsiveLayout="scroll">
                     <!-- Columnas de la tabla -->
                     <Column field="orden" header="Orden" :sortable="true">
                         <template #body="slotProps">
@@ -261,7 +256,8 @@ const goBack = () => {
                     <Column field="estado" header="Estado" :sortable="true">
                         <template #body="slotProps">
                             <span class="p-column-title">Estado</span>
-                            <i class="pi" :class="{ 'text-green-500 pi-check-circle': slotProps.data.activo, 'text-pink-500 pi-times-circle': !slotProps.data.activo }"></i>
+                            <i class="pi"
+                                :class="{ 'text-green-500 pi-check-circle': slotProps.data.activo, 'text-pink-500 pi-times-circle': !slotProps.data.activo }"></i>
                             <span class="text-green-500 ml-3 font-medium" v-if="slotProps.data.activo"> Activo </span>
                             <span class="text-pink-500 ml-3 font-medium" v-else> Desactivado </span>
                         </template>
@@ -282,75 +278,83 @@ const goBack = () => {
                     <Column header="Imagen">
                         <template #body="slotProps">
                             <span class="p-column-title">Imagen</span>
-                            <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre + ' Pitograma'" class="shadow-2" width="100" preview />
+                            <Image :src="slotProps.data.imagen_pictograma" :alt="slotProps.data.nombre + ' Pitograma'"
+                                class="shadow-2" width="100" preview />
                         </template>
                     </Column>
                     <Column header="Acción">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editarCategoria(slotProps.data)" />
-                            <Button v-if="slotProps.data.activo" icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="eliminarActividadConfirmar(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                                @click="editarCategoria(slotProps.data)" />
+                            <Button v-if="slotProps.data.activo" icon="pi pi-trash"
+                                class="p-button-rounded p-button-warning"
+                                @click="eliminarActividadConfirmar(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
                 <div v-else style="text-align: center; padding: 30px">
                     <p class="">No hay datos disponibles</p>
                 </div>
-                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" :header="nombreDialog" :modal="true" class="p-fluid">
-                    <div class="field">
-                        <label for="nombre">Nombre</label>
-                        <InputText id="nombre" v-model="selectedActividad.nombre" required="true" autofocus :class="{ 'p-invalid': v.nombre.$error }" placeholder="Escribe el nombre del categoria aquí ejemplo Mátematica" />
-                        <small class="p-error" v-if="v.nombre.$error"> El pictograma de la actividad debe de tener por al menos 1 caracteres </small>
-                    </div>
-                    <div class="field">
-                        <label for="descripcion">Descripción</label>
-                        <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true" rows="3" cols="20" :class="{ 'p-invalid': v.descripcion.$error }" placeholder="Escribe la descripción de la categoria aquí (Opcional)" />
-                    </div>
-                    <div class="field" v-if="nombreDialog == 'Editar Actividad Pictograma'">
-                        <label for="descripcion">Estado</label>
-                        <div class="field-checkbox mb-0">
-                            <Checkbox v-model="selectedActividad.activo" :binary="true" />
-                            <label for="checkOption1">Activo</label>
+                <Dialog v-model:visible="moduloDialog" :style="{ width: '850px' }" :header="nombreDialog" :modal="true"
+                    class="p-fluid">
+                    <div class="grid nested-grid">
+                        <div class="col">
+                            <div class="field">
+                                <label for="nombre">Nombre</label>
+                                <InputText id="nombre" v-model="selectedActividad.nombre" required="true" autofocus
+                                    :class="{ 'p-invalid': v.nombre.$error }"
+                                    placeholder="Escribe el nombre del pictograma Ejemplo Luz apagada, Puerta " />
+                                <small class="p-error" v-if="v.nombre.$error"> El pictograma de la actividad debe de tener
+                                    por al menos 1 caracteres </small>
+                            </div>
+                            <div class="field">
+                                <label for="descripcion">Descripción</label>
+                                <Textarea id="descripcion" v-model="selectedActividad.descripcion" required="true" rows="3"
+                                    cols="20" :class="{ 'p-invalid': v.descripcion.$error }"
+                                    placeholder="Escribe la descripción del pictigrama aquí (Opcional)" />
+                            </div>
+                            <div class="formgrid grid">
+                                <div class="field  col">
+                                    <FileUpload mode="basic" id="input-foto" name="imagen" accept="image/*" customUpload
+                                        @uploader="customBase64Uploader" chooseLabel="Subir imagen"
+                                        invalidFileSizeMessage="El tamaño máximo de la imagen permitido es 5MB"
+                                        invalidFileLimitMessage="Solo se admite un archivo a la vez"
+                                        invalidFileTypeMessage="Solo se admite formato de imagen PNG, JPG, JPEG"
+                                        :maxFileSize="5000000" :showUploadButton="false" :showCancelButton="false"
+                                        :auto="true">
+                                    </FileUpload>
+                                    <small class="p-error" v-if="v.imagen_pictograma.$error"> Se tiene que subir una imagen
+                                    </small>
+                                </div>
+                                <div class="field col field-checkbox" v-if="nombreDialog == 'Editar Actividad Pictograma'">
+                                    <Checkbox v-model="selectedActividad.activo" :binary="true" />
+                                    <label for="checkOption1">Activo</label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <div class="field">
-                            <FileUpload
-                                mode="basic"
-                                id="input-foto"
-                                name="imagen"
-                                accept="image/*"
-                                customUpload
-                                @uploader="customBase64Uploader"
-                                chooseLabel="Subir imagen"
-                                invalidFileSizeMessage="El tamaño máximo de la imagen permitido es 5MB"
-                                invalidFileLimitMessage="Solo se admite un archivo a la vez"
-                                invalidFileTypeMessage="Solo se admite formato de imagen PNG, JPG, JPEG"
-                                :maxFileSize="5000000"
-                                :showUploadButton="false"
-                                :showCancelButton="false"
-                                :auto="true"
-                            >
-                            </FileUpload>
-                            <small class="p-error" v-if="v.imagen_pictograma.$error"> Se tiene que subir una imagen </small>
+                        <div class="field col-5">
+                            <div class="flex align-items-center justify-content-center">
+                                <Image :src="selectedActividad.imagen_pictograma" width="250" class="w-auto" preview />
+                            </div>
                         </div>
-                        <div class="flex align-items-center justify-content-center">
-                            <Image :src="selectedActividad.imagen_pictograma" width="150" class="w-auto" preview />
-                        </div>
-                    </div>
 
+                    </div>
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text" @click="guardarActividad"> </Button>
+                        <Button :disabled="cargando" label="Guardar" icon="pi pi-save" class="p-button-text"
+                            @click="guardarActividad"> </Button>
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="eliminarActividadDialog" :style="{ width: '450px' }" header="Desactivar Actividad" :modal="true">
+                <Dialog v-model:visible="eliminarActividadDialog" :style="{ width: '450px' }" header="Desactivar Actividad"
+                    :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="selectedActividad">¿Estás seguro de desactivar la actividad?</span>
                     </div>
                     <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="eliminarActividadDialog = false" />
+                        <Button label="No" icon="pi pi-times" class="p-button-text"
+                            @click="eliminarActividadDialog = false" />
                         <Button label="Si" icon="pi pi-check" class="p-button-text" @click="eliminarActividad" />
                     </template>
                 </Dialog>

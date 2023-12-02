@@ -16,11 +16,6 @@ const router = createRouter({
                 },
                 
                 {
-                    path: '/pages/crud',
-                    name: 'crud',
-                    component: () => import('@/views/pages/Crud.vue')
-                },
-                {
                     path:'/palabras',
                     name:'crudpalabras',
                     component: () => import('@/views/pages/Palabras.vue')
@@ -53,7 +48,7 @@ const router = createRouter({
                 {
                     path: '/documentation',
                     name: 'documentation',
-                    component: () => import('@/views/utilities/Documentation.vue')
+                    component: () => import('@/views/Dashboardjuegos.vue')
                 }
             ]
         },
@@ -107,6 +102,15 @@ const router = createRouter({
                     component: () => import('@/views/pages/juegos/ActvidadPictograma.vue'),
                     props: true // Esto permite recibir el parámetro como una propiedad en el componente
                 },
+                {
+                    path: '/juegos/categorias/ordenar_oraciones/:categoriaId',
+                    name: 'ActividadOrdenarOracionesJuegos',
+                    component: () => import('@/views/pages/juegos/ActividadOrdenarOraciones.vue'),
+                    props : true
+                    
+
+                },
+
 
             ]
         }

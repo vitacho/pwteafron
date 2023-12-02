@@ -5,26 +5,27 @@ import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
 
 import { useVuelidate } from '@vuelidate/core';
-import { required, minLength } from '@vuelidate/validators';
+import { required} from '@vuelidate/validators';
 import { getuseToast } from '@/composables/usarToast';
 
 const palabras = ref([]); // Aquí se almacena la lista de módulos
 const selectedpalabra = ref(null); // Aquí se almacena el módulo seleccionado para edición
-const moduloDialog = ref(false); // Dialogo de edición
+const palabraDialog = ref(false); // Dialogo de edición
 const submitted = ref(false); // Indica si el formulario ha sido enviado
 const base64File = ref(null); // Aquí se almacena la imagen seleccionada para subir en base64
 const baseUrl = getBaseUrl();
 const cargando = ref(false);
 const { mostrarError, mostrarInfo, mostrarExito } = getuseToast();
 const busqueda = ref('');
+const nombreDialog = ref('');
 const rules = {
-    texto: { required }, // Mínimo de 3 caracteres
-    imagen: { required } // Mínimo de 10 caracteres
+    texto: { required }, // Mínimo de 1 caracteres
+    imagen: { required } 
 
     // Agrega las reglas para otros campos aquí
 };
 
-const v = useVuelidate(rules, selectedpalabra);
+const validarPalabras = useVuelidate(rules, selectedpalabra);
 
 onMounted(() => {
     fetchPalabras(); //llamamos a la funcion para traer los palabras
@@ -40,30 +41,37 @@ const fetchPalabras = async () => {
     }
 };
 
+const openNew = () => {
+    selectedpalabra.value = {};
+    palabraDialog.value = true;
+    validarPalabras.value.$reset();
+    nombreDialog.value = 'Nueva Palabra';
+};
+
 const editarpalabra = (modulo) => {
     selectedpalabra.value = { ...modulo }; // Copia el módulo seleccionado para edición
-    moduloDialog.value = true;
+    palabraDialog.value = true;
+    nombreDialog.value = 'Editar Palabra';
 };
 
 const hideDialog = () => {
-    moduloDialog.value = false;
+    palabraDialog.value = false;
     selectedpalabra.value = null; // Limpia el módulo seleccionado al cerrar el diálogo
     submitted.value = false; // Limpia el indicador de envío de formulario
     base64File.value = null; // Limpia la imagen seleccionada
-    v.value.$reset();
+    validarPalabras.value.$reset();
     fetchPalabras();
 };
 //metodo para guardar el modulo
 const guardarPalabra = async () => {
     cargando.value = true;
-    console.log('1223334');
 
     console.log('Módulo a guardar:', selectedpalabra.value);
     // Validar el formulario con Vuelidate
     // Validar el formulario con Vuelidate
-    v.value.$touch();
+    validarPalabras.value.$touch();
 
-    if (v.value.$error) {
+    if (validarPalabras.value.$error) {
         // Mostrar errores de validación si existen
         mostrarError('Error', 'Por favor, verifica los datos ingresados.');
         cargando.value = false;
@@ -99,7 +107,7 @@ const guardarPalabra = async () => {
             fetchPalabras();
             cargando.value = false;
             base64File.value = null; // Limpia la imagen seleccionada
-            v.value.$reset();
+            validarPalabras.value.$reset();
         } catch (error) {
             if (error.code === 'ECONNABORTED') {
                 mostrarError('Error', 'Tiempo de espera agotado. Por favor, verifica tu conexión a Internet.');
@@ -146,6 +154,7 @@ const customBase64Uploader = async (event) => {
     };
     mostrarInfo('', 'La imagen se ha cargado correctamente');
 };
+
 </script>
 
 <template>
@@ -165,19 +174,14 @@ const customBase64Uploader = async (event) => {
                         
                          <div class="flex justify-content-between flex-column sm:flex-row">
                             
-                                <Button label="Nueva Actividad" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
+                                <Button label="Nueva Palabra" icon="pi pi-plus" class="p-button-success mr-2" @click="openNew" />
                                
                                     <span class="p-input-icon-left">
                                         <i class="pi pi-search" />
                                         <InputText v-model="busqueda" placeholder="Buscar" />
-                                    </span>
-                               
+                                    </span>        
                          </div>
                           
-
-                           
-
-                      
                     </template>
                     <template #empty> No se encontraron actividades </template>
                     <Column field="texto" header="Texto" :sortable="true">
@@ -188,7 +192,7 @@ const customBase64Uploader = async (event) => {
                     </Column>
                     <Column header="Imagen">
                         <template #body="slotProps">
-                            <Image :src="slotProps.data.imagen" :alt="slotProps.data.texto" class="shadow-2" width="100"
+                            <Image :src="slotProps.data.imagen" v-if="slotProps.data.imagen" :alt="slotProps.data.texto" class="shadow-2" width="100"
                                 preview />
                         </template>
                     </Column>
@@ -201,27 +205,27 @@ const customBase64Uploader = async (event) => {
                     <template #footer> Hay un total de {{ palabras ? palabras.length : 0 }} Palabras. </template>
                 </DataTable>
 
-                <Dialog v-model:visible="moduloDialog" :style="{ width: '670px' }" header="Editar Módulo" :modal="true"
+                <Dialog v-model:visible="palabraDialog" :style="{ width: '670px' }" :header="nombreDialog" :modal="true"
                     class="p-fluid">
                     <div class="field">
                         <label for="texto">Texto</label>
                         <InputText id="texto" v-model="selectedpalabra.texto" required="true" autofocus
-                            :class="{ 'p-invalid': v.texto.$error }" />
-                        <small class="p-error" v-if="v.texto.$error"> El texto tiene que tener por al menos 3 caracteres
+                            :class="{ 'p-invalid': validarPalabras.texto.$error }" />
+                        <small class="p-error" v-if="validarPalabras.texto.$error"> El texto tiene que tener por al menos 3 caracteres
                         </small>
                     </div>
 
                     <div class="field">
                         <div class="field">
                             <FileUpload mode="basic" id="input-foto" name="imagen" accept="image/*" customUpload
-                                @uploader="customBase64Uploader" chooseLabel="Cambiar imagen" uploadLabel="Subir"
+                                @uploader="customBase64Uploader" chooseLabel="Subir imagen" uploadLabel="Subir"
                                 cancelLabel="Cancelar"
                                 invalidFileSizeMessage="El tamaño máximo de la imagen permitido es 5MB"
                                 invalidFileLimitMessage="Solo se admite un archivo a la vez"
                                 invalidFileTypeMessage="Solo se admite formato de imagen PNG, JPG, JPEG"
                                 :maxFileSize="5000000" :showUploadButton="false" :showCancelButton="false" :auto="true">
                             </FileUpload>
-                            <small class="p-error" v-if="v.imagen.$error"> Se tiene que subir una imagen </small>
+                            <small class="p-error" v-if="validarPalabras.imagen.$error"> Se tiene que subir una imagen </small>
                         </div>
                         <div class="flex align-items-center justify-content-center">
                             <Image :src="selectedpalabra.imagen" width="150" class="w-auto" preview />
