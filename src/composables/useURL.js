@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-//const baseUrl = ' http://127.0.0.1:8000/api/';
+const baseUrl = ' http://127.0.0.1:8000/api/';
 const api = '01fec15fd2083f050b8f9fb7414193d8';
 
-const baseUrl = 'https://j1nwcn2l-8000.use2.devtunnels.ms/api/';
+//const baseUrl = 'https://j1nwcn2l-8000.use2.devtunnels.ms/api/';
 export function getBaseUrl() {
     return baseUrl;
 }
