@@ -7,6 +7,7 @@ import { getresponsiveOptins } from '@/composables/useJuegos';
 import { useRouter, useRoute } from 'vue-router';
 import { shuffle } from 'lodash';
 import { VueDraggableNext } from 'vue-draggable-next';
+import globos from '@/components/globos.vue';
 
 //variables
 const baseUrl = getBaseUrl();
@@ -29,20 +30,14 @@ const Terminado = ref(false);
 const palabrasOrdenadas = ref([]);
 const palabrasDesordenadas = ref([]);
 const draggable = ref(VueDraggableNext);
-const palabras = ref([]);
-const list = [
-   { name: 'John', id: 1 },
-   { name: 'Joao', id: 2 },
-   { name: 'Jean', id: 3 },
-   { name: 'Gerard', id: 4 }
-];
+
 
 const fetchActividades = async () => {
    try {
       isLoading.value = true;
       const response = await axios.get(`${baseUrl}v1/actividades/ordenar-oracion/activas/${categoriaId.value}/`);
       console.log(response);
-
+      
       if (response.status === 200) {
          oraciones.value = response.data;
          console.log('Oraciones = ' + oraciones.value.data);
@@ -94,39 +89,84 @@ const fetchoracionActual = async () => {
          }
       }
 
-      //imprimimos la lista de palabras por ordenar
-      for (let i = 0; i < palabrasOrdenadas.value.length; i++) {
-         console.log('----' + i + '----');
-         console.log('Palabras por ordenar = ' + palabrasOrdenadas.value[i].texto);
-         console.log('url de imagen = ' + JSON.stringify(palabrasOrdenadas.value[i]));
-      }
-      //
-      //desordenamos las PalabrasOrdenadas
-     
-      //si al desordenara las palabras son iguales a las palabras ordenadas volvemos a desordenar
       do {
          //desordenamos las palabras
          palabrasDesordenadas.value = shuffle([...palabrasOrdenadas.value]);
          //comparamos si son iguales
-      } while (arraysAreEqual(palabrasDesordenadas.value, palabrasOrdenadas.value));
+         console.log('Palbras desordenadas'+JSON.stringify(palabrasDesordenadas.value));
+      } while (arraysReorganizar(palabrasDesordenadas.value, palabrasOrdenadas.value));
 
-      for (let i = 0; i < palabrasDesordenadas.value.length; i++) {
-         console.log('*****' + i + '*****');
-         console.log('Palabras por ordenar = ' + palabrasDesordenadas.value[i].texto);
-         //console.log('url de imagen = ' + JSON.stringify(palabrasDesordenadas.value[i]));
-      }
+         //console.log('Palbras desordenadas'+JSON.stringify(palabrasDesordenadas.value));
    } catch (error) {
       console.error(error);
    }
 };
+
+function arraysReorganizar(a, b) {
+  // Verifica si cada palabra en 'a' no está en la misma posición que en 'b'
+  return a.length === b.length && a.every((val, index) => val.id === b[index].id);
+}
 
 function arraysAreEqual(a, b) {
    //se toma el arraya de las palabras ordenadas y se compara con el array de las palabras desordenadas
    //si son iguales retorna true
    //si son diferentes retorna false
 
-  return a.length === b.length && a.every((val, index) => val === b[index]);
-}
+   return a.length === b.length && a.every((val, index) => val === b[index]);
+};
+
+
+const checkMove = (evt) => {
+   var itenel = evt.clone;
+   console.log ('itenel = '+ JSON.stringify(itenel));
+   console.log('end');
+   console.log(evt.newIndex);
+   //console.log('Palabras ordenadas = ' + palabrasOrdenadas.value);
+   //console.log('Palabras desordenadas = ' + palabrasDesordenadas.value);
+   //console.log('Palabras lista = ' + palabras_lista.value);
+};       
+
+const verificarOrden = () => {
+
+   // verificamos si las plabaras ordenadas y desordendas son iguales si son iguales se pasa a la siguiente oracion
+
+   if (arraysAreEqual(palabrasDesordenadas.value, palabrasOrdenadas.value)) {
+      //si son iguales se pasa a la siguiente oracion
+      console.log('Son iguales');
+      //verificamos si es la ultima oracion
+      if (numActualOracion.value === numItems.value - 1) {
+         //si es la ultima oracion se termina el juego
+         console.log('Terminado');
+         Terminado.value = true;
+         mostrarExito('¡Felicidades!', 'Has completado todas las oraciones.');
+         const numero = Math.floor(Math.random() * 4) + 1;
+         //reproducimos un sonido de un archivo mp3public/layout/audio/IntentaloDeNuevo
+         const audio = new Audio(`layout/audio/Correcto/felicitaciones${numero}.mp3`);
+
+         audio.play();
+      } else {
+         //si no es la ultima oracion se pasa a la siguiente oracion
+         console.log('Siguiente oracion');
+         //reproduciomos un audio de felicitaciones por la oracion correcta 
+         const numero = Math.floor(Math.random() * 6) + 1;
+         const audio = new Audio(`layout/audio/Correcto/SeleccionCorrecta/seleccion${numero}.mp3`);
+         audio.play();
+         numActualOracion.value = numActualOracion.value + 1;
+         // limpiamos las palabras desordenadas y ordenadas
+         palabrasDesordenadas.value = [];
+         palabrasOrdenadas.value = [];
+         palabras_lista.value = [];
+         fetchoracionActual();
+      }
+   } else {
+      //si son diferentes se muestra un mensaje de error
+      console.log('Son diferentes');
+      mostrarError('¡Ups!', 'Las palabras no están en el orden correcto.');
+   }
+
+   //si son diferentes se muestra un mensaje de error
+
+};
 
 const fecthPalabrasActuales = async (palabras_actuales) => {
    try {
@@ -179,9 +219,7 @@ const VolverCategorias = () => {
 
 //Caluclo de numero aletorios
 
-const randon = () => {
-   return Math.floor(Math.random() * 1);
-};
+
 
 onMounted(async () => {
    await fetchCategorias();
@@ -212,13 +250,15 @@ onMounted(async () => {
                         </h3>
                      </div>
 
-                     <div class="flex flex-wrap justify-content-center" >
-                        <draggable class="grid text-center" :list="palabrasDesordenadas" @change="log">
-                           <div class="align-items-center bg-gray-300 m-1 p-3 rounded-md "
+                     <div class="flex flex-wrap justify-content-center ">
+                        <draggable class="grid text-center " :list="palabrasDesordenadas" @change="log"
+                           @end="verificarOrden" :move="checkMove" >
+                           <div class="align-items-center w-12rem h-16rem m-3 p-3 rounded-md cursor-move" 
+                           style="background-color:  #E0BAD7 ;"
                               v-for="element in palabrasDesordenadas" :key="element.id">
                               <div class="grid">
-                                 <div class="col">
-                                    {{ element.texto }}
+                                 <div class="col text-black-alpha-90 text-900">     
+                                         {{ element.texto }}      
                                  </div>
                               </div>
                               <div class="grid">
@@ -229,7 +269,7 @@ onMounted(async () => {
                            </div>
                         </draggable>
                      </div>
-                     
+
                      <div class="flex justify-content-center">
                         <a outlined class="transparent-button" name="volver" @click="VolverCategorias">
                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="60" height="60"
@@ -249,37 +289,7 @@ onMounted(async () => {
                   </div>
                   <div v-else>
                      <!-- Cuando se completa la actividad -->
-                     <div class="globos flex align-items-center">
-                        <img class="globo" :style="{ 'animation-duration': '5s', 'animation-delay': 0 + 's', left: '10%' }"
-                           src="layout/images/globos/2.svg" alt="Globo 1" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '6s', 'animation-delay': randon() + 's', left: '20%' }"
-                           src="layout/images/globos/3.svg" alt="Globo 2" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '7s', 'animation-delay': randon() + 's', left: '30%' }"
-                           src="layout/images/globos/4.svg" alt="Globo 3" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '6s', 'animation-delay': randon() + 's', left: ' 40%' }"
-                           src="layout/images/globos/5.svg" alt="Globo 4" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '8s', 'animation-delay': randon() + 's', left: '50%' }"
-                           src="layout/images/globos/2.svg" alt="Globo 5" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '4s', 'animation-delay': randon() + 's', left: '60%' }"
-                           src="layout/images/globos/3.svg" alt="Globo 6" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '7s', 'animation-delay': randon() + 's', left: '70%' }"
-                           src="layout/images/globos/4.svg" alt="Globo 7" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '4s', 'animation-delay': randon() + 's', left: ' 80%' }"
-                           src="layout/images/globos/5.svg" alt="Globo 8" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '5s', 'animation-delay': randon() + 's', left: ' 90%' }"
-                           src="layout/images/globos/6.svg" alt="Globo 9" />
-                        <img class="globo"
-                           :style="{ 'animation-duration': '8s', 'animation-delay': randon() + 's', left: ' 0%' }"
-                           src="layout/images/globos/6.svg" alt="Globo 9" />
-                     </div>
+                     <globos></globos>
                   </div>
                </div>
             </div>
@@ -397,26 +407,4 @@ onMounted(async () => {
    transition: max-width 0.3s ease, max-height 0.3s ease;
    z-index: 1;
 }
-
-.globos {
-   position: relative;
-   height: 100vh;
-   overflow: hidden;
-}
-
-.globo {
-   position: absolute;
-   bottom: 0;
-   animation: subir infinite ease-in-out;
-   width: 250px;
-}
-
-@keyframes subir {
-   0% {
-      bottom: 0;
-   }
-
-   100% {
-      bottom: 100vh;
-   }
-}</style>
+</style>

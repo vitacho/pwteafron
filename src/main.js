@@ -1,7 +1,6 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
 import Accordion from 'primevue/accordion';
@@ -100,7 +99,6 @@ import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
-import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
 import Vuelidate from "vuelidate";
@@ -121,7 +119,7 @@ app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
 app.directive('styleclass', StyleClass);
 
-app.component('BlockViewer', BlockViewer);
+
 
 app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
@@ -216,3 +214,8 @@ app.component('VirtualScroller', VirtualScroller);
 
 
 app.mount('#app');
+
+var token = localStorage.getItem("token");
+if (token) {
+    axios.defaults.headers.common['Authorization'] = token;
+}

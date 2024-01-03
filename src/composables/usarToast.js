@@ -15,9 +15,14 @@ export function getuseToast() {
     toast.add({ severity: 'success', summary: info, detail: mensaje, life: 4000 });
   }
 
+  function mostrarAdvertencia(info, mensaje) {
+    toast.add({ severity: 'warn', summary: info, detail: mensaje, life: 4000 });
+  }
+
   return {
     mostrarError,
     mostrarInfo,
     mostrarExito,
+    mostrarAdvertencia,
   };
 }

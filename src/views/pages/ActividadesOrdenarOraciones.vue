@@ -10,7 +10,7 @@ import { useRouter } from 'vue-router';
 //importaciones de composables
 import { getBaseUrl } from '@/composables/useURL';
 import { base64ToBlob, getBase64Type } from '@/composables/useBase64';
-import { required, minLength } from '@vuelidate/validators';
+import { required, minLength, helpers } from '@vuelidate/validators';
 import { getuseToast } from '@/composables/usarToast';
 
 const route = useRoute();
@@ -41,15 +41,26 @@ const loading = ref(true);
 
 
 
-//funcion para traer el modulo y su Factulizacion cunado sea necesario
+
+
+//validacion para dos palabras o mas con helpers
+const dospalabras = helpers.withMessage('La oracion debe de tener por al menos dos palabras o mas', value => {
+    
+    if (value.split(' ').length >= 2) {
+        return true;
+    }
+    return false;
+}); 
 
 // Validación de formulario con Vuelidate
 const rules = {
-    nombre: { required }, // Mínimo de 3 caracteres// Mínimo de 10 caracteres
-        oracion: { required }, //oracion de la actividad
+     // que sea requerido y con mensaje de error
+    nombre: { required, minLength: minLength(1) }, //nombre de la actividad
+    oracion: { required, dospalabras },  //oracion de la actividad
     //oracion de la actividad
 
 };
+
 const rules_palabras = {
     imagen: { required },
 };
@@ -458,9 +469,9 @@ const goBack = () => {
                                     <InputText id="descripcion" v-model="selectedActividad.oracion" required="true" rows="3"
                                         cols="20" :class="{ 'p-invalid': validarOracion.oracion.$error }"
                                         placeholder="Escribe la oración" />
-                                    <small class="p-error" v-if="validarOracion.nombre.$error"> La oracion debe de tener por
-                                        al menos un
-                                        caracteres</small>
+                                    
+                                        <small class="p-error" v-if=" validarOracion.oracion.$error"> {{validarOracion.oracion.dospalabras.$message }}  </small>
+                                        
                                 </div>
                             </div>
 
